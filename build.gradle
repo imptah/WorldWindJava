@@ -56,7 +56,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
         include '**/*.java'
         exclude 'config/**'
         exclude 'images/**'
-        exclude 'gov/nasa/worldwindx/**'
+        //exclude 'gov/nasa/worldwindx/**'
     }
 }
 
@@ -206,7 +206,7 @@ test {
 jar {
     dependsOn classes
     from sourceSets.main.output
-    exclude 'gov/nasa/worldwindx/**'
+    //exclude 'gov/nasa/worldwindx/**'
     doLast {
         copy {
             from "$buildDir/libs/$jar.archiveName"

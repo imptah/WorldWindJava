@@ -78,24 +78,28 @@ public abstract class TiledImageLayer extends AbstractLayer
     protected boolean atMaxResolution = false;
     protected PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(200);
 
+    protected FlexibleTextureTile.CacheFilePathStrategy cacheFilePathStrategy;
+
     abstract protected void requestTexture(DrawContext dc, TextureTile tile);
 
     abstract protected void forceTextureLoad(TextureTile tile);
 
-    public TiledImageLayer(LevelSet levelSet)
-    {
+    public TiledImageLayer(LevelSet levelSet) {
         if (levelSet == null)
         {
             String message = Logging.getMessage("nullValue.LevelSetIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
-
         this.levels = new LevelSet(levelSet); // the caller's levelSet may change internally, so we copy it.
         this.setValue(AVKey.SECTOR, this.levels.getSector());
 
         this.setPickEnabled(false); // textures are assumed to be terrain unless specifically indicated otherwise.
         this.tileCountName = this.getName() + " Tiles";
+    }
+
+    public void setCacheFilePathStrategy(FlexibleTextureTile.CacheFilePathStrategy cacheFilePathStrategy) {
+        this.cacheFilePathStrategy = cacheFilePathStrategy;
     }
 
     @Override
@@ -335,11 +339,19 @@ public abstract class TiledImageLayer extends AbstractLayer
             {
                 Angle t2;
                 t2 = t1.add(dLon);
-
-                this.topLevels.add(new TextureTile(new Sector(p1, p2, t1, t2), level, row, col));
+                Sector s = new Sector(p1, p2, t1, t2);
+                this.topLevels.add(createTextureTile(s, level, row, col));
                 t1 = t2;
             }
             p1 = p2;
+        }
+    }
+
+    private TextureTile createTextureTile(Sector sector, Level level, int row, int col) {
+        if (cacheFilePathStrategy == null) {
+            return new TextureTile(sector, level, row, col);
+        } else {
+            return new FlexibleTextureTile(sector, level, row, col, cacheFilePathStrategy);
         }
     }
 
@@ -1473,7 +1485,8 @@ public abstract class TiledImageLayer extends AbstractLayer
             {
                 TileKey key = new TileKey(targetLevel.getLevelNumber(), row, col, targetLevel.getCacheName());
                 Sector tileSector = this.levels.computeSectorForKey(key);
-                sectorTiles[nwRow - row][col - nwCol] = new TextureTile(tileSector, targetLevel, row, col);
+
+                sectorTiles[nwRow - row][col - nwCol] = createTextureTile(tileSector, targetLevel, row, col);
             }
         }
 

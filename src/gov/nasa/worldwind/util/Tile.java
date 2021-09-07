@@ -47,15 +47,15 @@ import java.util.Random;
 public class Tile implements Comparable<Tile>, Cacheable
 {
     private final Sector sector;
-    private final Level level;
-    private final int row;
-    private final int column;
+    protected final Level level;
+    protected final int row;
+    protected final int column;
     /** An optional cache name. Overrides the Level's cache name when non-null. */
     private final String cacheName;
     private final TileKey tileKey;
     private double priority = Double.MAX_VALUE; // Default is minimum priority
     // The following is late bound because it's only selectively needed and costly to create
-    private String path;
+    protected String path;
 
     /**
      * Constructs a tile for a given sector, level, row and column of the tile's containing tile set.

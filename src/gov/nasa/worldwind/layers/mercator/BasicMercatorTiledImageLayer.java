@@ -2,25 +2,25 @@
  * Copyright 2006-2009, 2017, 2020 United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
- * 
+ *
  * The NASA World Wind Java (WWJ) platform is licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed
  * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- * 
+ *
  * NASA World Wind Java (WWJ) also contains the following 3rd party Open Source
  * software:
- * 
+ *
  *     Jackson Parser – Licensed under Apache 2.0
  *     GDAL – Licensed under MIT
  *     JOGL – Licensed under  Berkeley Software Distribution (BSD)
  *     Gluegen – Licensed under Berkeley Software Distribution (BSD)
- * 
+ *
  * A complete listing of 3rd Party software notices and licenses included in
  * NASA World Wind Java (WWJ)  can be found in the WorldWindJava-v2.2 3rd-party
  * notices and licenses PDF found in code directory.
@@ -30,7 +30,6 @@ package gov.nasa.worldwind.layers.mercator;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.util.*;
 
 import javax.imageio.ImageIO;
@@ -41,10 +40,8 @@ import java.util.ArrayList;
 /**
  * @author Sufaev
  */
-public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer
-{
-    private static LevelSet makeLevels(String datasetName, String dataCacheName, int numLevels, int tileSize, String formatSuffix, MercatorTileUrlBuilder buider)
-    {
+public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
+    private static LevelSet makeLevels(String datasetName, String dataCacheName, int numLevels, int tileSize, String formatSuffix, MercatorTileUrlBuilder buider) {
         double delta = Angle.POS360.degrees / (1 << buider.getFirstLevelOffset());
         AVList params = new AVListImpl();
         params.setValue(AVKey.SECTOR, new MercatorSector(-1.0, 1.0, Angle.NEG180, Angle.POS180));
@@ -59,20 +56,18 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer
         return new LevelSet(params);
     }
 
-    public BasicMercatorTiledImageLayer(String datasetName, String dataCacheName, int numLevels, int tileSize, boolean overlay, String formatSuffix, MercatorTileUrlBuilder builder)
-    {
+
+    public BasicMercatorTiledImageLayer(String datasetName, String dataCacheName, int numLevels, int tileSize, boolean overlay, String formatSuffix, MercatorTileUrlBuilder builder) {
         this(makeLevels(datasetName, dataCacheName, numLevels, tileSize, formatSuffix, builder));
         setUseTransparentTextures(overlay);
     }
 
-    public BasicMercatorTiledImageLayer(LevelSet levelSet)
-    {
+    public BasicMercatorTiledImageLayer(LevelSet levelSet) {
         super(levelSet);
     }
 
     @Override
-    protected void createTopLevelTiles()
-    {
+    protected void createTopLevelTiles() {
         MercatorSector sector = (MercatorSector) this.levels.getSector();
 
         Level level = levels.getFirstLevel();
@@ -95,93 +90,75 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer
 
         double deltaLat = dLat.degrees / 90;
         double d1 = sector.getMinLatPercent() + deltaLat * firstRow;
-        for (int row = firstRow; row <= lastRow; row++)
-        {
+        for (int row = firstRow; row <= lastRow; row++) {
             double d2 = d1 + deltaLat;
             Angle t1 = Tile.computeColumnLongitude(firstCol, dLon, lonOrigin);
-            for (int col = firstCol; col <= lastCol; col++)
-            {
+            for (int col = firstCol; col <= lastCol; col++) {
                 Angle t2;
                 t2 = t1.add(dLon);
-                this.topLevels.add(new MercatorTextureTile(new MercatorSector(d1, d2, t1, t2), level, row, col));
+                this.topLevels.add(new MercatorTextureTile(new MercatorSector(d1, d2, t1, t2), level, row, col, cacheFilePathStrategy));
                 t1 = t2;
             }
             d1 = d2;
         }
     }
-    
-    protected MercatorTileUrlBuilder getURLBuilder()
-    {
+
+    protected MercatorTileUrlBuilder getURLBuilder() {
         LevelSet levelSet = getLevels();
         Level firstLevel = levelSet.getFirstLevel();
         AVList params = firstLevel.getParams();
         Object value = params.getValue(AVKey.TILE_URL_BUILDER);
-        MercatorTileUrlBuilder urlBuilder = (MercatorTileUrlBuilder)value;
+        MercatorTileUrlBuilder urlBuilder = (MercatorTileUrlBuilder) value;
         return urlBuilder;
     }
-    
+
     @Override
-    protected DownloadPostProcessor createDownloadPostProcessor(TextureTile tile)
-    {
+    protected DownloadPostProcessor createDownloadPostProcessor(TextureTile tile) {
         return new MercatorDownloadPostProcessor((MercatorTextureTile) tile, this);
     }
 
-    private static class MercatorDownloadPostProcessor extends DownloadPostProcessor
-    {
+    private static class MercatorDownloadPostProcessor extends DownloadPostProcessor {
 
-        MercatorDownloadPostProcessor(MercatorTextureTile tile, BasicMercatorTiledImageLayer layer) 
-        {
+        MercatorDownloadPostProcessor(MercatorTextureTile tile, BasicMercatorTiledImageLayer layer) {
             super(tile, layer);
         }
 
         @Override
-        protected BufferedImage transformPixels()
-        {
+        protected BufferedImage transformPixels() {
             // Make parent transformations
             BufferedImage image = super.transformPixels();
 
             // Read image from buffer
-            if (image == null)
-            {
-                try
-                {
+            if (image == null) {
+                try {
                     image = ImageIO.read(new ByteArrayInputStream(this.getRetriever().getBuffer().array()));
-                }
-                catch (IOException ignored)
-                {
+                } catch (IOException ignored) {
                     return null;
                 }
             }
 
             // Transform mercator tile to equirectangular projection
-            if (image != null)
-            {
+            if (image != null) {
                 int type = image.getType();
-                if (type != BufferedImage.TYPE_INT_RGB)
-                {
+                if (type != BufferedImage.TYPE_INT_RGB) {
                     type = BufferedImage.TYPE_INT_ARGB;
                 }
-                
+
                 BufferedImage trans = new BufferedImage(image.getWidth(), image.getHeight(), type);
                 double miny = ((MercatorSector) tile.getSector()).getMinLatPercent();
                 double maxy = ((MercatorSector) tile.getSector()).getMaxLatPercent();
-                for (int y = 0; y < image.getHeight(); y++)
-                {
+                for (int y = 0; y < image.getHeight(); y++) {
                     double sy = 1.0 - y / (double) (image.getHeight() - 1);
                     Angle lat = Angle.fromRadians(sy * tile.getSector().getDeltaLatRadians() + tile.getSector().getMinLatitude().radians);
                     double dy = 1.0 - (MercatorSector.gudermannianInverse(lat) - miny) / (maxy - miny);
                     dy = Math.max(0.0, Math.min(1.0, dy));
                     int iy = (int) (dy * (image.getHeight() - 1));
-                    for (int x = 0; x < image.getWidth(); x++)
-                    {
+                    for (int x = 0; x < image.getWidth(); x++) {
                         trans.setRGB(x, y, image.getRGB(x, iy));
                     }
                 }
-
                 return trans;
-            }
-            else
-            {
+            } else {
                 return null;
             }
         }
