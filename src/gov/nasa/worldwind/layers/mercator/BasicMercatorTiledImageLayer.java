@@ -28,6 +28,7 @@
 package gov.nasa.worldwind.layers.mercator;
 
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.*;
 import gov.nasa.worldwind.util.*;
@@ -62,8 +63,17 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
         setUseTransparentTextures(overlay);
     }
 
+    public BasicMercatorTiledImageLayer(String datasetName, String dataCacheName, int numLevels, int tileSize, boolean overlay, String formatSuffix, MercatorTileUrlBuilder builder, FileStore customFileStore) {
+        this(makeLevels(datasetName, dataCacheName, numLevels, tileSize, formatSuffix, builder), customFileStore);
+        setUseTransparentTextures(overlay);
+    }
+
     public BasicMercatorTiledImageLayer(LevelSet levelSet) {
         super(levelSet);
+    }
+
+    public BasicMercatorTiledImageLayer(LevelSet levelSet, FileStore customFileStore) {
+        super(levelSet, customFileStore);
     }
 
     @Override

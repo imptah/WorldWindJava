@@ -29,6 +29,7 @@ package gov.nasa.worldwind.layers;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.cache.FileStore;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.geom.Box;
 import gov.nasa.worldwind.globes.Earth;
@@ -83,6 +84,13 @@ public abstract class TiledImageLayer extends AbstractLayer
     abstract protected void requestTexture(DrawContext dc, TextureTile tile);
 
     abstract protected void forceTextureLoad(TextureTile tile);
+
+    public TiledImageLayer(LevelSet levelSet, FileStore customFileStore) {
+        this(levelSet);
+        if (customFileStore != null) {
+            super.setDataFileStore(customFileStore);
+        }
+    }
 
     public TiledImageLayer(LevelSet levelSet) {
         if (levelSet == null)
@@ -1569,4 +1577,5 @@ public abstract class TiledImageLayer extends AbstractLayer
             // Don't mark the tile as absent because the caller may want to try again.
         }
     }
+
 }

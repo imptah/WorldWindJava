@@ -2,25 +2,25 @@
  * Copyright 2006-2009, 2017, 2020 United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
  * All rights reserved.
- * 
+ *
  * The NASA World Wind Java (WWJ) platform is licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed
  * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
- * 
+ *
  * NASA World Wind Java (WWJ) also contains the following 3rd party Open Source
  * software:
- * 
+ *
  *     Jackson Parser – Licensed under Apache 2.0
  *     GDAL – Licensed under MIT
  *     JOGL – Licensed under  Berkeley Software Distribution (BSD)
  *     Gluegen – Licensed under Berkeley Software Distribution (BSD)
- * 
+ *
  * A complete listing of 3rd Party software notices and licenses included in
  * NASA World Wind Java (WWJ)  can be found in the WorldWindJava-v2.2 3rd-party
  * notices and licenses PDF found in code directory.
@@ -42,8 +42,7 @@ import java.beans.PropertyChangeEvent;
  * @author tag
  * @version $Id: AbstractLayer.java 2254 2014-08-22 17:02:46Z tgaskins $
  */
-public abstract class AbstractLayer extends WWObjectImpl implements Layer
-{
+public abstract class AbstractLayer extends WWObjectImpl implements Layer {
     private boolean enabled = true;
     private boolean pickable = true;
     private double opacity = 1d;
@@ -54,112 +53,91 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
     private ScreenCredit screenCredit = null;
     private FileStore dataFileStore = WorldWind.getDataFileStore();
 
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return this.enabled;
     }
 
-    public boolean isPickEnabled()
-    {
+    public boolean isPickEnabled() {
         return pickable;
     }
 
-    public void setPickEnabled(boolean pickable)
-    {
+    public void setPickEnabled(boolean pickable) {
         this.pickable = pickable;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         Boolean oldEnabled = this.enabled;
         this.enabled = enabled;
         this.propertyChange(new PropertyChangeEvent(this, "Enabled", oldEnabled, this.enabled));
     }
 
-    public String getName()
-    {
+    public String getName() {
         Object n = this.getValue(AVKey.DISPLAY_NAME);
 
         return n != null ? n.toString() : this.toString();
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.setValue(AVKey.DISPLAY_NAME, name);
     }
 
-    public String toString()
-    {
+    public String toString() {
         Object n = this.getValue(AVKey.DISPLAY_NAME);
 
         return n != null ? n.toString() : super.toString();
     }
 
-    public double getOpacity()
-    {
+    public double getOpacity() {
         return opacity;
     }
 
-    public void setOpacity(double opacity)
-    {
+    public void setOpacity(double opacity) {
         this.opacity = opacity;
     }
 
-    public double getMinActiveAltitude()
-    {
+    public double getMinActiveAltitude() {
         return minActiveAltitude;
     }
 
-    public void setMinActiveAltitude(double minActiveAltitude)
-    {
+    public void setMinActiveAltitude(double minActiveAltitude) {
         this.minActiveAltitude = minActiveAltitude;
     }
 
-    public double getMaxActiveAltitude()
-    {
+    public double getMaxActiveAltitude() {
         return maxActiveAltitude;
     }
 
-    public void setMaxActiveAltitude(double maxActiveAltitude)
-    {
+    public void setMaxActiveAltitude(double maxActiveAltitude) {
         this.maxActiveAltitude = maxActiveAltitude;
     }
 
-    public Double getMinEffectiveAltitude(Double radius)
-    {
+    public Double getMinEffectiveAltitude(Double radius) {
         return null;
     }
 
-    public Double getMaxEffectiveAltitude(Double radius)
-    {
+    public Double getMaxEffectiveAltitude(Double radius) {
         return null;
     }
 
-    public double getScale()
-    {
+    public double getScale() {
         Object o = this.getValue(AVKey.MAP_SCALE);
         return o != null && o instanceof Double ? (Double) o : 1;
     }
 
-    public boolean isNetworkRetrievalEnabled()
-    {
+    public boolean isNetworkRetrievalEnabled() {
         return networkDownloadEnabled;
     }
 
-    public void setNetworkRetrievalEnabled(boolean networkDownloadEnabled)
-    {
+    public void setNetworkRetrievalEnabled(boolean networkDownloadEnabled) {
         this.networkDownloadEnabled = networkDownloadEnabled;
     }
 
-    public FileStore getDataFileStore()
-    {
+    public FileStore getDataFileStore() {
         return this.dataFileStore;
     }
 
-    public void setDataFileStore(FileStore fileStore)
-    {
-        if (fileStore == null)
-        {
+    public void setDataFileStore(FileStore fileStore) {
+        if (fileStore == null) {
             String message = Logging.getMessage("nullValue.FileStoreIsNull");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
@@ -168,10 +146,8 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         this.dataFileStore = fileStore;
     }
 
-    public boolean isLayerInView(DrawContext dc)
-    {
-        if (dc == null)
-        {
+    public boolean isLayerInView(DrawContext dc) {
+        if (dc == null) {
             String message = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
@@ -180,17 +156,14 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         return true;
     }
 
-    public boolean isLayerActive(DrawContext dc)
-    {
-        if (dc == null)
-        {
+    public boolean isLayerActive(DrawContext dc) {
+        if (dc == null) {
             String message = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getView())
-        {
+        if (null == dc.getView()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
@@ -204,27 +177,23 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         return altitude >= this.minActiveAltitude && altitude <= this.maxActiveAltitude;
     }
 
-    public void preRender(DrawContext dc)
-    {
+    public void preRender(DrawContext dc) {
         if (!this.enabled)
             return; // Don't check for arg errors if we're disabled
 
-        if (null == dc)
-        {
+        if (null == dc) {
             String message = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getGlobe())
-        {
+        if (null == dc.getGlobe()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getView())
-        {
+        if (null == dc.getView()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
@@ -241,31 +210,26 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
 
     /**
      * @param dc the current draw context
-     *
      * @throws IllegalArgumentException if <code>dc</code> is null, or <code>dc</code>'s <code>Globe</code> or
      *                                  <code>View</code> is null
      */
-    public void render(DrawContext dc)
-    {
+    public void render(DrawContext dc) {
         if (!this.enabled)
             return; // Don't check for arg errors if we're disabled
 
-        if (null == dc)
-        {
+        if (null == dc) {
             String message = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getGlobe())
-        {
+        if (null == dc.getGlobe()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getView())
-        {
+        if (null == dc.getView()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
@@ -280,27 +244,23 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         this.doRender(dc);
     }
 
-    public void pick(DrawContext dc, java.awt.Point point)
-    {
+    public void pick(DrawContext dc, java.awt.Point point) {
         if (!this.enabled)
             return; // Don't check for arg errors if we're disabled
 
-        if (null == dc)
-        {
+        if (null == dc) {
             String message = Logging.getMessage("nullValue.DrawContextIsNull");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getGlobe())
-        {
+        if (null == dc.getGlobe()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoGlobeSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
         }
 
-        if (null == dc.getView())
-        {
+        if (null == dc.getView()) {
             String message = Logging.getMessage("layers.AbstractLayer.NoViewSpecifiedInDrawingContext");
             Logging.logger().severe(message);
             throw new IllegalStateException(message);
@@ -315,8 +275,7 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         this.doPick(dc, point);
     }
 
-    protected void doPick(DrawContext dc, java.awt.Point point)
-    {
+    protected void doPick(DrawContext dc, java.awt.Point point) {
         // any state that could change the color needs to be disabled, such as GL_TEXTURE, GL_LIGHTING or GL_FOG.
         // re-draw with unique colors
         // store the object info in the selectable objects table
@@ -329,51 +288,42 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
     {
     }
 
-    protected void doPreRender(DrawContext dc)
-    {
+    protected void doPreRender(DrawContext dc) {
     }
 
     protected abstract void doRender(DrawContext dc);
 
-    public boolean isAtMaxResolution()
-    {
+    public boolean isAtMaxResolution() {
         return !this.isMultiResolution();
     }
 
-    public boolean isMultiResolution()
-    {
+    public boolean isMultiResolution() {
         return false;
     }
 
-    public String getRestorableState()
-    {
+    public String getRestorableState() {
         return null;
     }
 
-    public void restoreState(String stateInXml)
-    {
+    public void restoreState(String stateInXml) {
         String message = Logging.getMessage("RestorableSupport.RestoreNotSupported");
         Logging.logger().severe(message);
         throw new UnsupportedOperationException(message);
     }
 
-    public void setExpiryTime(long expiryTime)
-    {
+    public void setExpiryTime(long expiryTime) {
         this.expiryTime = expiryTime;
     }
 
-    public long getExpiryTime()
-    {
+    public long getExpiryTime() {
         return this.expiryTime;
     }
 
-    protected ScreenCredit getScreenCredit()
-    {
+    protected ScreenCredit getScreenCredit() {
         return screenCredit;
     }
 
-    protected void setScreenCredit(ScreenCredit screenCredit)
-    {
+    protected void setScreenCredit(ScreenCredit screenCredit) {
         this.screenCredit = screenCredit;
     }
 
@@ -385,15 +335,11 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
      * Returns true if a specified DOM document is a Layer configuration document, and false otherwise.
      *
      * @param domElement the DOM document in question.
-     *
      * @return true if the document is a Layer configuration document; false otherwise.
-     *
      * @throws IllegalArgumentException if document is null.
      */
-    public static boolean isLayerConfigDocument(Element domElement)
-    {
-        if (domElement == null)
-        {
+    public static boolean isLayerConfigDocument(Element domElement) {
+        if (domElement == null) {
             String message = Logging.getMessage("nullValue.DocumentIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
@@ -418,22 +364,17 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
      *
      * @param params  the key-value pairs which define the layer configuration parameters.
      * @param context the XML document root on which to append layer configuration elements.
-     *
      * @return a reference to context.
-     *
      * @throws IllegalArgumentException if either the parameters or the context are null.
      */
-    public static Element createLayerConfigElements(AVList params, Element context)
-    {
-        if (params == null)
-        {
+    public static Element createLayerConfigElements(AVList params, Element context) {
+        if (params == null) {
             String message = Logging.getMessage("nullValue.ParametersIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
         }
 
-        if (context == null)
-        {
+        if (context == null) {
             String message = Logging.getMessage("nullValue.ContextIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
@@ -444,8 +385,7 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
 
         Double maxAlt = AVListImpl.getDoubleValue(params, AVKey.MAX_ACTIVE_ALTITUDE);
         Double minAlt = AVListImpl.getDoubleValue(params, AVKey.MIN_ACTIVE_ALTITUDE);
-        if (maxAlt != null || minAlt != null)
-        {
+        if (maxAlt != null || minAlt != null) {
             Element el = WWXML.appendElementPath(context, "ActiveAltitudes");
             if (maxAlt != null)
                 WWXML.setDoubleAttribute(el, "max", maxAlt);
@@ -476,15 +416,11 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
      * @param domElement the XML document root to parse for layer configuration elements.
      * @param params     the output key-value pairs which recieve the layer configuration parameters. A null reference
      *                   is permitted.
-     *
      * @return a reference to params, or a new AVList if params is null.
-     *
      * @throws IllegalArgumentException if the document is null.
      */
-    public static AVList getLayerConfigParams(Element domElement, AVList params)
-    {
-        if (domElement == null)
-        {
+    public static AVList getLayerConfigParams(Element domElement, AVList params) {
+        if (domElement == null) {
             String message = Logging.getMessage("nullValue.DocumentIsNull");
             Logging.logger().severe(message);
             throw new IllegalArgumentException(message);
@@ -500,13 +436,13 @@ public abstract class AbstractLayer extends WWObjectImpl implements Layer
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.MAX_ACTIVE_ALTITUDE, "ActiveAltitudes/@max", xpath);
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.MIN_ACTIVE_ALTITUDE, "ActiveAltitudes/@min", xpath);
         WWXML.checkAndSetBooleanParam(domElement, params, AVKey.NETWORK_RETRIEVAL_ENABLED, "NetworkRetrievalEnabled",
-            xpath);
+                xpath);
         WWXML.checkAndSetDoubleParam(domElement, params, AVKey.MAP_SCALE, "MapScale", xpath);
         WWXML.checkAndSetScreenCreditParam(domElement, params, AVKey.SCREEN_CREDIT, "ScreenCredit", xpath);
         WWXML.checkAndSetIntegerParam(domElement, params, AVKey.MAX_ABSENT_TILE_ATTEMPTS, "MaxAbsentTileAttempts",
-            xpath);
+                xpath);
         WWXML.checkAndSetIntegerParam(domElement, params, AVKey.MIN_ABSENT_TILE_CHECK_INTERVAL,
-            "MinAbsentTileCheckInterval", xpath);
+                "MinAbsentTileCheckInterval", xpath);
         WWXML.checkAndSetBooleanParam(domElement, params, AVKey.PICK_ENABLED, "PickEnabled", xpath);
 
         return params;
