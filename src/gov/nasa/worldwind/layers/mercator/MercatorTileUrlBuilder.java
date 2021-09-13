@@ -8,19 +8,20 @@ package gov.nasa.worldwind.layers.mercator;
 
 import gov.nasa.worldwind.util.*;
 
+import java.io.File;
 import java.net.*;
 
 /**
  * @author Sufaev
  */
-public abstract class MercatorTileUrlBuilder implements TileUrlBuilder
-{
+public abstract class MercatorTileUrlBuilder implements TileUrlBuilder {
     private static final int DEFAULT_FIRST_LEVEL_OFFSET = 3;
-    
+
     private int firstLevelOffset;
-    
-    protected MercatorTileUrlBuilder()
-    {
+
+    private SharedTileSource sharedTileSource = null;
+
+    protected MercatorTileUrlBuilder() {
         this.firstLevelOffset = DEFAULT_FIRST_LEVEL_OFFSET;
     }
 
@@ -29,15 +30,33 @@ public abstract class MercatorTileUrlBuilder implements TileUrlBuilder
         return this;
     }
 
+    public SharedTileSource getSharedTileSource() {
+        return sharedTileSource;
+    }
+
+    public void setSharedTileSource(SharedTileSource sharedTileSource) {
+        this.sharedTileSource = sharedTileSource;
+    }
+
     public int getFirstLevelOffset() {
         return firstLevelOffset;
     }
 
     @Override
-    public URL getURL(Tile tile, String imageFormat) throws MalformedURLException
-    {
-        return getMercatorURL(tile.getColumn(), (1 << (tile.getLevelNumber() + firstLevelOffset)) - 1 - tile.getRow(), tile.getLevelNumber() + firstLevelOffset);
+    public URL getURL(Tile tile, String imageFormat) throws MalformedURLException {
+        int x = tile.getColumn();
+        int y = (1 << (tile.getLevelNumber() + firstLevelOffset)) - 1 - tile.getRow();
+        int z = tile.getLevelNumber() + firstLevelOffset;
+        if (sharedTileSource != null) {
+            File sharedTileFile = new File(sharedTileSource.getSourcePath(), sharedTileSource.getTilePath(x, y, z));
+            if (sharedTileFile.exists()) {
+                return sharedTileFile.toURI().toURL();
+            }
+        }
+        return getMercatorURL(x, y, z);
     }
 
     protected abstract URL getMercatorURL(int x, int y, int z) throws MalformedURLException;
+
+
 }

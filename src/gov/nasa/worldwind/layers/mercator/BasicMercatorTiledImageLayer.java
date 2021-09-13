@@ -27,21 +27,37 @@
  */
 package gov.nasa.worldwind.layers.mercator;
 
-import gov.nasa.worldwind.avlist.*;
+import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.avlist.AVList;
+import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.cache.FileStore;
-import gov.nasa.worldwind.geom.*;
-import gov.nasa.worldwind.layers.*;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.data.FileRequestRasterServer;
+import gov.nasa.worldwind.data.RasterServer;
+import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.layers.BasicTiledImageLayer;
+import gov.nasa.worldwind.layers.TextureTile;
+import gov.nasa.worldwind.retrieve.LocalRasterServerRetriever;
+import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.LevelSet;
+import gov.nasa.worldwind.util.Tile;
+import gov.nasa.worldwind.util.WWIO;
 
 import javax.imageio.ImageIO;
-import java.awt.image.*;
-import java.io.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 
 /**
  * @author Sufaev
  */
 public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
+
     private static LevelSet makeLevels(String datasetName, String dataCacheName, int numLevels, int tileSize, String formatSuffix, MercatorTileUrlBuilder buider) {
         double delta = Angle.POS360.degrees / (1 << buider.getFirstLevelOffset());
         AVList params = new AVListImpl();
@@ -57,6 +73,7 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
         return new LevelSet(params);
     }
 
+    private RasterServer rasterServer = null;
 
     public BasicMercatorTiledImageLayer(String datasetName, String dataCacheName, int numLevels, int tileSize, boolean overlay, String formatSuffix, MercatorTileUrlBuilder builder) {
         this(makeLevels(datasetName, dataCacheName, numLevels, tileSize, formatSuffix, builder));
@@ -96,7 +113,7 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
         int nLatTiles = lastRow - firstRow + 1;
         int nLonTiles = lastCol - firstCol + 1;
 
-        this.topLevels = new ArrayList<TextureTile>(nLatTiles * nLonTiles);
+        this.topLevels = new ArrayList<>(nLatTiles * nLonTiles);
 
         double deltaLat = dLat.degrees / 90;
         double d1 = sector.getMinLatPercent() + deltaLat * firstRow;
@@ -118,13 +135,60 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
         Level firstLevel = levelSet.getFirstLevel();
         AVList params = firstLevel.getParams();
         Object value = params.getValue(AVKey.TILE_URL_BUILDER);
-        MercatorTileUrlBuilder urlBuilder = (MercatorTileUrlBuilder) value;
-        return urlBuilder;
+        return (MercatorTileUrlBuilder) value;
     }
 
     @Override
     protected DownloadPostProcessor createDownloadPostProcessor(TextureTile tile) {
         return new MercatorDownloadPostProcessor((MercatorTextureTile) tile, this);
+    }
+
+    public SharedTileSource getSharedTileSource() {
+        return getURLBuilder().getSharedTileSource();
+    }
+
+    public void setSharedTileSource(SharedTileSource sharedTileSource) {
+        getURLBuilder().setSharedTileSource(sharedTileSource);
+    }
+
+    @Override
+    protected void retrieveRemoteTexture(TextureTile tile, DownloadPostProcessor postProcessor) {
+        URL resourceUrl;
+        try {
+            resourceUrl = tile.getResourceURL();
+        } catch (MalformedURLException e) {
+            resourceUrl = null;
+        }
+        if (resourceUrl != null && resourceUrl.getProtocol().equals("file")) {
+            retrieveSharedTexture(resourceUrl, tile, postProcessor);
+        } else {
+            super.retrieveRemoteTexture(tile, postProcessor);
+        }
+    }
+
+
+
+    private void retrieveSharedTexture(URL resourceUrl, TextureTile tile, DownloadPostProcessor postProcessor) {
+        if (postProcessor == null)
+            postProcessor = this.createDownloadPostProcessor(tile);
+
+        AVListImpl avList = new AVListImpl();
+        avList.setValue(AVKey.SECTOR, tile.getSector());
+        avList.setValue(AVKey.WIDTH, tile.getWidth());
+        avList.setValue(AVKey.HEIGHT, tile.getHeight());
+        String path = URLDecoder.decode(resourceUrl.getPath());
+        avList.setValue(AVKey.FILE_NAME, path);
+        avList.setValue(AVKey.DISPLAY_NAME, "Single file retriever");
+        avList.setValue(AVKey.IMAGE_FORMAT, WWIO.makeMimeTypeForSuffix(tile.getFormatSuffix()));
+
+        if (rasterServer == null) {
+            rasterServer = new FileRequestRasterServer();
+        }
+
+        LocalRasterServerRetriever retriever =
+                new LocalRasterServerRetriever(avList, rasterServer, postProcessor);
+
+        WorldWind.getLocalRetrievalService().runRetriever(retriever, tile.getPriority());
     }
 
     private static class MercatorDownloadPostProcessor extends DownloadPostProcessor {
@@ -142,7 +206,8 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
             if (image == null) {
                 try {
                     image = ImageIO.read(new ByteArrayInputStream(this.getRetriever().getBuffer().array()));
-                } catch (IOException ignored) {
+                } catch (IOException e) {
+                    e.printStackTrace();
                     return null;
                 }
             }
@@ -150,8 +215,17 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
             // Transform mercator tile to equirectangular projection
             if (image != null) {
                 int type = image.getType();
-                if (type != BufferedImage.TYPE_INT_RGB) {
-                    type = BufferedImage.TYPE_INT_ARGB;
+                switch (type) {
+                    case BufferedImage.TYPE_CUSTOM:
+                    case BufferedImage.TYPE_BYTE_BINARY:
+                        type = BufferedImage.TYPE_INT_RGB;
+                        break;
+                    case BufferedImage.TYPE_BYTE_INDEXED:
+                        type = BufferedImage.TYPE_INT_ARGB;
+                        break;
+                    default:
+                        // leave value returned from image.getType()
+                        break;
                 }
 
                 BufferedImage trans = new BufferedImage(image.getWidth(), image.getHeight(), type);
