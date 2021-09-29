@@ -208,7 +208,7 @@ public class LocalRasterServerRetriever extends WWObjectImpl implements Retrieve
         {
             this.setState(RETRIEVER_STATE_ERROR);
 
-            Logging.logger().log(Level.SEVERE, Logging.getMessage("Retriever.ErrorPostProcessing", this.getName()), e);
+            //Logging.logger().log(Level.SEVERE, Logging.getMessage("Retriever.ErrorPostProcessing", this.getName()), e);
             throw e;
         }
 

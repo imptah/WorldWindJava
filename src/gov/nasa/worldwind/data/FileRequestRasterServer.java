@@ -30,7 +30,7 @@ public class FileRequestRasterServer implements RasterServer {
             return getByteBuffer(params);
         } catch (IOException e) {
             String message = "Error reading file content";
-            Logging.logger().finest(message);
+            //Logging.logger().finest(message);
             throw new WWRuntimeException(message);
         }
     }
