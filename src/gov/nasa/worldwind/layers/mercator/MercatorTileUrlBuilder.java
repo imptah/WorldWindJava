@@ -49,11 +49,10 @@ public abstract class MercatorTileUrlBuilder implements TileUrlBuilder {
         int z = tile.getLevelNumber() + firstLevelOffset;
         if (sharedTileSource != null) {
             File sharedTileFile = new File(sharedTileSource.getSourcePath(), sharedTileSource.getTilePath(x, y, z));
-            if (sharedTileFile.exists()) {
-                return sharedTileFile.toURI().toURL();
-            }
+            return sharedTileFile.toURI().toURL();
+        } else  {
+            return getMercatorURL(x, y, z);
         }
-        return getMercatorURL(x, y, z);
     }
 
     protected abstract URL getMercatorURL(int x, int y, int z) throws MalformedURLException;
