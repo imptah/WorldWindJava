@@ -495,7 +495,13 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
      */
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int w, int h)
     {
-        // This is apparently necessary to enable the WWJ canvas to resize correctly with JSplitPane.
+        if (WWUtil.getOS() == WWUtil.OS.WINDOWS) {
+            GL2 gl = this.drawable.getGL().getGL2(); // change this as needed
+            double dpiScalingFactor = (double) (Toolkit.getDefaultToolkit().getScreenResolution() / 96.0);
+            w = (int) (w * dpiScalingFactor);
+            h = (int) (h * dpiScalingFactor);
+            gl.glViewport(0, 0, w, h);
+        }
         ((Component) glAutoDrawable).setMinimumSize(new Dimension(0, 0));
     }
 
