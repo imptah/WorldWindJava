@@ -36,6 +36,7 @@ import java.awt.*;
 import java.lang.reflect.*;
 import java.nio.*;
 import java.text.*;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -1291,5 +1292,19 @@ public class WWUtil
             normals.put(i3 + 1, (float) n3.y);
             normals.put(i3 + 2, (float) n3.z);
         }
+    }
+
+    public static OS getOS() {
+        String osName = System.getProperty("os.name").toLowerCase(Locale.getDefault());
+        if (osName.contains("win")) return OS.WINDOWS;
+        else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) return OS.LINUX;
+        if (osName.contains("mac")) return OS.MAC;
+        else return null;
+    }
+
+    public enum OS {
+        WINDOWS,
+        LINUX,
+        MAC
     }
 }
