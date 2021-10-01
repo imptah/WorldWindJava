@@ -14,6 +14,9 @@ import gov.nasa.worldwind.util.ImageUtil;
 import gov.nasa.worldwind.util.Logging;
 import mil.nga.tiff.*;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.plugins.tiff.TIFFDirectory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,13 +89,18 @@ public class GeoTiffFileReader implements Disposable {
     private static ArrayList<AVList> getFileDirectoriesMetadata(TIFFImage tiffImage, File file) throws IOException {
         ArrayList<AVList> metadata = new ArrayList<>();
         List<FileDirectory> fileDirectories = tiffImage.getFileDirectories();
+        GeoCodec fileGeoCodec = null;
         for (int i = 0; i < fileDirectories.size(); i++) {
-            metadata.add(i, createImageFileDirectoryMetadata(file, fileDirectories.get(i), i));
+            FileDirectory fileDirectory = fileDirectories.get(i);
+            if (i == 0) {
+                fileGeoCodec = createGeoCodecFromFileImageDirectory(fileDirectory);
+            }
+            metadata.add(i, createImageFileDirectoryMetadata(file, fileDirectory, i, fileGeoCodec));
         }
         return metadata;
     }
 
-    private static AVList createImageFileDirectoryMetadata(File file, FileDirectory fileDirectory, int index) throws IOException {
+    private static AVList createImageFileDirectoryMetadata(File file, FileDirectory fileDirectory, int index, GeoCodec gc) throws IOException {
         AVListImpl params = new AVListImpl();
         // FILE NAME
         params.setValue(AVKey.FILE_NAME, file.getAbsolutePath());
@@ -156,8 +164,6 @@ public class GeoTiffFileReader implements Disposable {
             Logging.logger().severe(message);
         }
 
-        // --- SETUP GEOCODEC ---
-        GeoCodec gc = new GeoCodec();
 
         // GDAL_NODATA
         String gdalNoData = fileDirectory.getStringEntryValue(FieldTagType.GDAL_NODATA);
@@ -168,24 +174,6 @@ public class GeoTiffFileReader implements Disposable {
         // MAX_SAMPLE_VALUE
         List<Double> maxSampleValue = fileDirectory.getDoubleListEntryValue(FieldTagType.MaxSampleValue);
         if (maxSampleValue != null) params.setValue(AVKey.ELEVATION_MAX, maxSampleValue.get(0));
-        // MODEL_PIXELSCALE
-        List<Double> modelPixelScale = fileDirectory.getModelPixelScale();
-        if (modelPixelScale != null) gc.setModelPixelScale(mapDoublesArray(modelPixelScale));
-        // MODEL_TIEPOINT
-        List<Double> modelTiePointParams = fileDirectory.getDoubleListEntryValue(FieldTagType.ModelTiepoint);
-        if (modelTiePointParams != null) gc.addModelTiePoints(mapDoublesArray(modelTiePointParams));
-        // MODEL_TRANSFORMATION
-        List<Double> modelTransformationParams = fileDirectory.getDoubleListEntryValue(FieldTagType.ModelTransformation);
-        if (modelTransformationParams != null) gc.setModelTransformation(mapDoublesArray(modelTransformationParams));
-        // GEO_KEY_DIRECTORY
-        List<Number> geoKeyParams = fileDirectory.getNumberListEntryValue(FieldTagType.GeoKeyDirectory);
-        if (geoKeyParams != null) gc.setGeokeys(mapShortArray(geoKeyParams));
-        // GEO_DOUBLE_PARAMS
-        List<Double> geoDoubleParams = fileDirectory.getDoubleListEntryValue(FieldTagType.GeoDoubleParams);
-        if (geoDoubleParams != null) gc.setDoubleParams(mapDoublesArray(geoDoubleParams));
-        // GEO_ASCII_PARAMS
-        String asciiParams = fileDirectory.getStringEntryValue(FieldTagType.GeoAsciiParams);
-        if (asciiParams != null) gc.setAsciiParams(asciiParams.getBytes());
 
         // --- PROCESS GEO KEYS ---
 
@@ -273,11 +261,34 @@ public class GeoTiffFileReader implements Disposable {
 
             params.setValue(AVKey.SECTOR, ImageUtil.calcBoundingBoxForUTM(params));
         } else {
-            String msg = Logging.getMessage("Geotiff.UnknownGeoKeyValue", gtModelTypeGeoKey, GeoTiff.GeoKey.ModelType);
+            String msg = Logging.getMessage("Geotiff.UnknownGeoKeyValue", gtModelTypeGeoKey, GeoTiff.GeoKey.ModelType, index);
             Logging.logger().severe(msg);
         }
 
         return params;
+    }
+
+    private static GeoCodec createGeoCodecFromFileImageDirectory(FileDirectory fileDirectory) {
+        GeoCodec gc = new GeoCodec();
+        // MODEL_PIXELSCALE
+        List<Double> modelPixelScale = fileDirectory.getModelPixelScale();
+        if (modelPixelScale != null) gc.setModelPixelScale(mapDoublesArray(modelPixelScale));
+        // MODEL_TIEPOINT
+        List<Double> modelTiePointParams = fileDirectory.getDoubleListEntryValue(FieldTagType.ModelTiepoint);
+        if (modelTiePointParams != null) gc.addModelTiePoints(mapDoublesArray(modelTiePointParams));
+        // MODEL_TRANSFORMATION
+        List<Double> modelTransformationParams = fileDirectory.getDoubleListEntryValue(FieldTagType.ModelTransformation);
+        if (modelTransformationParams != null) gc.setModelTransformation(mapDoublesArray(modelTransformationParams));
+        // GEO_KEY_DIRECTORY
+        List<Number> geoKeyParams = fileDirectory.getNumberListEntryValue(FieldTagType.GeoKeyDirectory);
+        if (geoKeyParams != null) gc.setGeokeys(mapShortArray(geoKeyParams));
+        // GEO_DOUBLE_PARAMS
+        List<Double> geoDoubleParams = fileDirectory.getDoubleListEntryValue(FieldTagType.GeoDoubleParams);
+        if (geoDoubleParams != null) gc.setDoubleParams(mapDoublesArray(geoDoubleParams));
+        // GEO_ASCII_PARAMS
+        String asciiParams = fileDirectory.getStringEntryValue(FieldTagType.GeoAsciiParams);
+        if (asciiParams != null) gc.setAsciiParams(asciiParams.getBytes());
+        return gc;
     }
 
     private static String getProjectionHemisphere(int projection) {

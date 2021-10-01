@@ -388,7 +388,7 @@ public class GeotiffWriter
 
         ifds.add(new TiffIFDEntry(Tiff.Tag.PLANAR_CONFIGURATION, Tiff.Type.SHORT, 1, Tiff.PlanarConfiguration.CHUNKY));
         ifds.add(new TiffIFDEntry(Tiff.Tag.SAMPLES_PER_PIXEL, Tiff.Type.SHORT, 1, numBands));
-        ifds.add(new TiffIFDEntry(Tiff.Tag.COMPRESSION, Tiff.Type.LONG, 1, Tiff.Compression.NONE));
+        ifds.add(new TiffIFDEntry(Tiff.Tag.COMPRESSION, Tiff.Type.SHORT, 1, Tiff.Compression.NONE));
         ifds.add(new TiffIFDEntry(Tiff.Tag.PHOTO_INTERPRETATION, Tiff.Type.SHORT, 1, Tiff.Photometric.Color_RGB));
 
         ifds.add(new TiffIFDEntry(Tiff.Tag.ORIENTATION, Tiff.Type.SHORT, 1, Tiff.Orientation.DEFAULT));
@@ -488,7 +488,7 @@ public class GeotiffWriter
         ifds.add(new TiffIFDEntry(Tiff.Tag.IMAGE_WIDTH, Tiff.Type.LONG, 1, numCols));
         ifds.add(new TiffIFDEntry(Tiff.Tag.IMAGE_LENGTH, Tiff.Type.LONG, 1, numRows));
         ifds.add(new TiffIFDEntry(Tiff.Tag.BITS_PER_SAMPLE, Tiff.Type.SHORT, 1, bitsPerSample));
-        ifds.add(new TiffIFDEntry(Tiff.Tag.COMPRESSION, Tiff.Type.LONG, 1, Tiff.Compression.NONE));
+        ifds.add(new TiffIFDEntry(Tiff.Tag.COMPRESSION, Tiff.Type.SHORT, 1, Tiff.Compression.NONE));
         ifds.add(new TiffIFDEntry(Tiff.Tag.PHOTO_INTERPRETATION, Tiff.Type.SHORT, 1,
             Tiff.Photometric.Grayscale_BlackIsZero));
         ifds.add(new TiffIFDEntry(Tiff.Tag.SAMPLE_FORMAT, Tiff.Type.SHORT, 1, Tiff.SampleFormat.UNSIGNED));
@@ -1309,7 +1309,7 @@ public class GeotiffWriter
         else
             ifds.add(new TiffIFDEntry(Tiff.Tag.BITS_PER_SAMPLE, Tiff.Type.SHORT, 1, bitsPerSample));
 
-        ifds.add(new TiffIFDEntry(Tiff.Tag.COMPRESSION, Tiff.Type.LONG, 1, Tiff.Compression.NONE));
+        ifds.add(new TiffIFDEntry(Tiff.Tag.COMPRESSION, Tiff.Type.SHORT, 1, Tiff.Compression.NONE));
         ifds.add(new TiffIFDEntry(Tiff.Tag.PHOTO_INTERPRETATION, Tiff.Type.SHORT, 1, photometric));
         ifds.add(new TiffIFDEntry(Tiff.Tag.SAMPLES_PER_PIXEL, Tiff.Type.SHORT, 1, samplesPerPixel));
         ifds.add(new TiffIFDEntry(Tiff.Tag.ORIENTATION, Tiff.Type.SHORT, 1, Tiff.Orientation.DEFAULT));
