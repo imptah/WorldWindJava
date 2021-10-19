@@ -11,9 +11,6 @@ worldwindx.jar
 /dist/
 /nbproject/private/
 
-gradle
-gradlew
-gradlew.bat
 .gradle
 .nb-gradle
 /bin/
