@@ -454,7 +454,7 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
             MouseEvent scaledEvent = new MouseEvent((Component) e.getSource(), e.getID(), e.getWhen(), e.getModifiersEx(),
                     x, y, e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), false, e.getButton());
             super.processMouseMotionEvent(scaledEvent);
-        } else super.processMouseEvent(e);
+        } else super.processMouseMotionEvent(e);
     }
 
     @Override
@@ -466,6 +466,6 @@ public class WorldWindowGLCanvas extends GLCanvas implements WorldWindow, Proper
             MouseWheelEvent scaledEvent = new MouseWheelEvent((Component) e.getSource(),
                     e.getID(), e.getWhen(), e.getModifiersEx(), x, y, e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), false, e.getScrollType(), e.getScrollAmount(), e.getWheelRotation());
             super.processMouseWheelEvent(scaledEvent);
-        } else super.processMouseEvent(e);
+        } else super.processMouseWheelEvent(e);
     }
 }
