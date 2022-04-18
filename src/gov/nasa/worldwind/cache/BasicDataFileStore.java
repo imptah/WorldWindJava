@@ -86,33 +86,6 @@ public class BasicDataFileStore extends AbstractFileStore
      */
     protected List<String> cacheContentTypes = new ArrayList<String>(DEFAULT_CACHE_CONTENT_TYPES);
 
-    public BasicDataFileStore(String directoryPath) {
-        File pathFile = new File(directoryPath);
-        if (!pathFile.exists()) {
-            Logging.logger().log(Level.FINER, "FileStore.MakingDirsFor", directoryPath);
-            pathFile.mkdirs();
-        }
-        // validate file store directory
-        boolean hasError = false;
-        if (!pathFile.isDirectory() || !pathFile.canWrite()) {
-            String message = Logging.getMessage("FileStore.NoWritePermissionForTileStoreLocation", directoryPath);
-            Logging.logger().severe(message);
-            hasError = true;
-        }
-        if (!pathFile.isDirectory() || !pathFile.canRead()) {
-            String message = Logging.getMessage("FileStore.NoReadPermissionForTileStoreLocation", directoryPath);
-            Logging.logger().severe(message);
-            hasError = true;
-        }
-        if (hasError) {
-            String message = Logging.getMessage("FileStore.LocationInvalid", directoryPath);
-            throw new IllegalStateException(message);
-        }
-        StoreLocation location = new StoreLocation(pathFile);
-        Logging.logger().log(Level.FINER, "FileStore.WriteLocationSuccessful", location.getFile().getAbsolutePath());
-        this.writeLocation = location;
-        this.readLocations.add(location);
-    }
     /**
      * Create an instance.
      *

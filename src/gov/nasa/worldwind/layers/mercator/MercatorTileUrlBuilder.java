@@ -19,8 +19,6 @@ public abstract class MercatorTileUrlBuilder implements TileUrlBuilder {
 
     private int firstLevelOffset;
 
-    private SharedTileSource sharedTileSource = null;
-
     protected MercatorTileUrlBuilder() {
         this.firstLevelOffset = DEFAULT_FIRST_LEVEL_OFFSET;
     }
@@ -28,14 +26,6 @@ public abstract class MercatorTileUrlBuilder implements TileUrlBuilder {
     public MercatorTileUrlBuilder setFirstLevelOffset(int firstLevelOffset) {
         this.firstLevelOffset = firstLevelOffset;
         return this;
-    }
-
-    public SharedTileSource getSharedTileSource() {
-        return sharedTileSource;
-    }
-
-    public void setSharedTileSource(SharedTileSource sharedTileSource) {
-        this.sharedTileSource = sharedTileSource;
     }
 
     public int getFirstLevelOffset() {
@@ -47,12 +37,7 @@ public abstract class MercatorTileUrlBuilder implements TileUrlBuilder {
         int x = tile.getColumn();
         int y = (1 << (tile.getLevelNumber() + firstLevelOffset)) - 1 - tile.getRow();
         int z = tile.getLevelNumber() + firstLevelOffset;
-        if (sharedTileSource != null) {
-            File sharedTileFile = new File(sharedTileSource.getSourcePath(), sharedTileSource.getTilePath(x, y, z));
-            return sharedTileFile.toURI().toURL();
-        } else  {
-            return getMercatorURL(x, y, z);
-        }
+        return getMercatorURL(x, y, z);
     }
 
     protected abstract URL getMercatorURL(int x, int y, int z) throws MalformedURLException;

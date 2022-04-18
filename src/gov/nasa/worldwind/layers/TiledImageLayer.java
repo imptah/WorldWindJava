@@ -79,18 +79,9 @@ public abstract class TiledImageLayer extends AbstractLayer
     protected boolean atMaxResolution = false;
     protected PriorityBlockingQueue<Runnable> requestQ = new PriorityBlockingQueue<Runnable>(200);
 
-    protected FlexibleTextureTile.CacheFilePathStrategy cacheFilePathStrategy;
-
     abstract protected void requestTexture(DrawContext dc, TextureTile tile);
 
     abstract protected void forceTextureLoad(TextureTile tile);
-
-    public TiledImageLayer(LevelSet levelSet, FileStore customFileStore) {
-        this(levelSet);
-        if (customFileStore != null) {
-            super.setDataFileStore(customFileStore);
-        }
-    }
 
     public TiledImageLayer(LevelSet levelSet) {
         if (levelSet == null)
@@ -104,10 +95,6 @@ public abstract class TiledImageLayer extends AbstractLayer
 
         this.setPickEnabled(false); // textures are assumed to be terrain unless specifically indicated otherwise.
         this.tileCountName = this.getName() + " Tiles";
-    }
-
-    public void setCacheFilePathStrategy(FlexibleTextureTile.CacheFilePathStrategy cacheFilePathStrategy) {
-        this.cacheFilePathStrategy = cacheFilePathStrategy;
     }
 
     @Override
@@ -356,11 +343,7 @@ public abstract class TiledImageLayer extends AbstractLayer
     }
 
     private TextureTile createTextureTile(Sector sector, Level level, int row, int col) {
-        if (cacheFilePathStrategy == null) {
-            return new TextureTile(sector, level, row, col);
-        } else {
-            return new FlexibleTextureTile(sector, level, row, col, cacheFilePathStrategy);
-        }
+        return new TextureTile(sector, level, row, col);
     }
 
     protected void loadAllTopLevelTextures(DrawContext dc)

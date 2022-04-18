@@ -10,6 +10,8 @@ import org.junit.runners.JUnit4;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
@@ -63,7 +65,12 @@ public class ImageTransformationTest {
                     // leave value returned from image.getType()
                     break;
             }
+       /*     ColorModel cm = image.getColorModel();
+            boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+            WritableRaster raster = image.copyData(null);
 
+            BufferedImage trans = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+*/
             BufferedImage trans = new BufferedImage(image.getWidth(), image.getHeight(), type);
             double miny = ((MercatorSector) sector).getMinLatPercent();
             double maxy = ((MercatorSector) sector).getMaxLatPercent();
@@ -80,6 +87,26 @@ public class ImageTransformationTest {
             return trans;
         } else {
             return null;
+        }
+    }
+
+    @Test
+    public void testMissionPlannerTilesTransformation() {
+        // get file
+        File file = new File("testData/17.jpg");
+        // Make parent transformations
+        // set sector for tile (values are hardcoded - it's right values for the tile)
+        Sector sector = new MercatorSector(0.25, 0.3125, Angle.fromDegrees(11.25), Angle.fromDegrees(22.5));
+
+        // transform original image
+        BufferedImage transformedImage = transformPixels(sector, file);
+        // try to write image to file
+        String transformedFilePath = "testData/17-transformed.jpg";
+        try {
+            File transformedFile = new File(transformedFilePath);
+            ImageIO.write(transformedImage, "png", transformedFile);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

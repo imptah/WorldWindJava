@@ -62,18 +62,6 @@ public class BasicTiledImageLayer extends TiledImageLayer implements BulkRetriev
         super(levelSet);
     }
 
-    public BasicTiledImageLayer(LevelSet levelSet, FileStore customFileStore) {
-        super(levelSet, customFileStore);
-    }
-
-    public BasicTiledImageLayer(AVList params, FileStore customFileStore) {
-        super(new LevelSet(params), customFileStore);
-        setupParams(params);
-        if (this.isRetrieveResources()) {
-            this.startResourceRetrieval();
-        }
-    }
-
     public BasicTiledImageLayer(AVList params) {
         this(new LevelSet(params));
         setupParams(params);

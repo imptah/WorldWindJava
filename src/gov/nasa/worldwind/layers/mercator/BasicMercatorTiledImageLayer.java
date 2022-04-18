@@ -31,8 +31,6 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.avlist.AVListImpl;
-import gov.nasa.worldwind.cache.FileStore;
-import gov.nasa.worldwind.data.FileRequestRasterServer;
 import gov.nasa.worldwind.data.RasterServer;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.LatLon;
@@ -80,17 +78,8 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
         setUseTransparentTextures(overlay);
     }
 
-    public BasicMercatorTiledImageLayer(String datasetName, String dataCacheName, int numLevels, int tileSize, boolean overlay, String formatSuffix, MercatorTileUrlBuilder builder, FileStore customFileStore) {
-        this(makeLevels(datasetName, dataCacheName, numLevels, tileSize, formatSuffix, builder), customFileStore);
-        setUseTransparentTextures(overlay);
-    }
-
     public BasicMercatorTiledImageLayer(LevelSet levelSet) {
         super(levelSet);
-    }
-
-    public BasicMercatorTiledImageLayer(LevelSet levelSet, FileStore customFileStore) {
-        super(levelSet, customFileStore);
     }
 
     @Override
@@ -123,7 +112,7 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
             for (int col = firstCol; col <= lastCol; col++) {
                 Angle t2;
                 t2 = t1.add(dLon);
-                this.topLevels.add(new MercatorTextureTile(new MercatorSector(d1, d2, t1, t2), level, row, col, cacheFilePathStrategy));
+                this.topLevels.add(new MercatorTextureTile(new MercatorSector(d1, d2, t1, t2), level, row, col));
                 t1 = t2;
             }
             d1 = d2;
@@ -141,14 +130,6 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
     @Override
     protected DownloadPostProcessor createDownloadPostProcessor(TextureTile tile) {
         return new MercatorDownloadPostProcessor((MercatorTextureTile) tile, this);
-    }
-
-    public SharedTileSource getSharedTileSource() {
-        return getURLBuilder().getSharedTileSource();
-    }
-
-    public void setSharedTileSource(SharedTileSource sharedTileSource) {
-        getURLBuilder().setSharedTileSource(sharedTileSource);
     }
 
     @Override
@@ -180,10 +161,6 @@ public class BasicMercatorTiledImageLayer extends BasicTiledImageLayer {
         avList.setValue(AVKey.FILE_NAME, path);
         avList.setValue(AVKey.DISPLAY_NAME, "Single file retriever");
         avList.setValue(AVKey.IMAGE_FORMAT, WWIO.makeMimeTypeForSuffix(tile.getFormatSuffix()));
-
-        if (rasterServer == null) {
-            rasterServer = new FileRequestRasterServer();
-        }
 
         LocalRasterServerRetriever retriever =
                 new LocalRasterServerRetriever(avList, rasterServer, postProcessor);

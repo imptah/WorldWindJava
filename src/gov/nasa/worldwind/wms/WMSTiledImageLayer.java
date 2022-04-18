@@ -55,10 +55,6 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer {
         super(params);
     }
 
-    public WMSTiledImageLayer(AVList params, FileStore customFileStore) {
-        super(params, customFileStore);
-    }
-
     public WMSTiledImageLayer(Document dom, AVList params) {
         this(dom.getDocumentElement(), params);
     }
@@ -69,10 +65,6 @@ public class WMSTiledImageLayer extends BasicTiledImageLayer {
 
     public WMSTiledImageLayer(WMSCapabilities caps, AVList params) {
         this(wmsGetParamsFromCapsDoc(caps, params));
-    }
-
-    public WMSTiledImageLayer(WMSCapabilities caps, AVList params, FileStore customFileStore) {
-        this(wmsGetParamsFromCapsDoc(caps, params), customFileStore);
     }
 
     public WMSTiledImageLayer(String stateInXml) {

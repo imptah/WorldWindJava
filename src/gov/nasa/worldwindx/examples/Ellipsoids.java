@@ -112,7 +112,7 @@ public class Ellipsoids extends ApplicationTemplate
             layer.addRenderable(ellipsoid9);
 
             // Scaled Ellipsoid with default orientation
-            Ellipsoid ellipsoid = new Ellipsoid(Position.ZERO, 1000000, 500000, 100000);
+            Ellipsoid ellipsoid = new Ellipsoid(Position.ZERO, 20000, 5000, 10000);
             ellipsoid.setAltitudeMode(WorldWind.ABSOLUTE);
             ellipsoid.setAttributes(attrs);
             ellipsoid.setVisible(true);

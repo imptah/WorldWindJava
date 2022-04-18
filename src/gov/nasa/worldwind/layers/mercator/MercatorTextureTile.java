@@ -28,21 +28,18 @@
 package gov.nasa.worldwind.layers.mercator;
 
 import gov.nasa.worldwind.geom.Angle;
-import gov.nasa.worldwind.layers.FlexibleTextureTile;
 import gov.nasa.worldwind.layers.TextureTile;
-import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.Level;
+import gov.nasa.worldwind.util.Logging;
+import gov.nasa.worldwind.util.TileKey;
 
 /**
  * @version $Id: MercatorTextureTile.java 1171 2013-02-11 21:45:02Z dcollins $
  */
-public class MercatorTextureTile extends FlexibleTextureTile {
+public class MercatorTextureTile extends TextureTile {
 
     public MercatorTextureTile(MercatorSector mercatorSector, Level level, int row, int col) {
         super(mercatorSector, level, row, col, null);
-    }
-
-    public MercatorTextureTile(MercatorSector mercatorSector, Level level, int row, int col, CacheFilePathStrategy cacheFilePathStrategy) {
-        super(mercatorSector, level, row, col, cacheFilePathStrategy);
     }
 
     @Override
@@ -76,16 +73,16 @@ public class MercatorTextureTile extends FlexibleTextureTile {
         TextureTile[] subTiles = new TextureTile[4];
 
         TextureTile subTile = this.getTileFromMemoryCache(new TileKey(nextLevelNum, northRow, westCol, nextLevelCacheName));
-        subTiles[0] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d0, d1, t0, t1), nextLevel, northRow, westCol, filePathStrategy);
+        subTiles[0] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d0, d1, t0, t1), nextLevel, northRow, westCol);
 
         subTile = this.getTileFromMemoryCache(new TileKey(nextLevelNum, northRow, eastCol, nextLevelCacheName));
-        subTiles[1] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d0, d1, t1, t2), nextLevel, northRow, eastCol, filePathStrategy);
+        subTiles[1] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d0, d1, t1, t2), nextLevel, northRow, eastCol);
 
         subTile = this.getTileFromMemoryCache(new TileKey(nextLevelNum, southRow, westCol, nextLevelCacheName));
-        subTiles[2] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d1, d2, t0, t1), nextLevel, southRow, westCol, filePathStrategy);
+        subTiles[2] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d1, d2, t0, t1), nextLevel, southRow, westCol);
 
         subTile = this.getTileFromMemoryCache(new TileKey(nextLevelNum, southRow, eastCol, nextLevelCacheName));
-        subTiles[3] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d1, d2, t1, t2), nextLevel, southRow, eastCol, filePathStrategy);
+        subTiles[3] = subTile != null ? subTile : new MercatorTextureTile(new MercatorSector(d1, d2, t1, t2), nextLevel, southRow, eastCol);
 
         return subTiles;
     }

@@ -415,7 +415,6 @@ public class SurfaceImage extends WWObjectImpl
     protected void initializeSourceTexture(DrawContext dc)
     {
         this.sourceTexture = new LazilyLoadedTexture(this.getImageSource(), true);
-
     }
 
     protected WWTexture initializeGeneratedTexture(DrawContext dc)
