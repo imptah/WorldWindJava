@@ -36,6 +36,9 @@ import gov.nasa.worldwind.util.Logging;
 
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.gl2.GLUgl2;
+import gov.nasa.worldwind.view.orbit.BasicOrbitView;
+import gov.nasa.worldwind.view.orbit.OrbitViewPropertyAccessor;
+
 import java.awt.*;
 
 /**
@@ -126,6 +129,18 @@ public class ViewUtil
 
         return new AngleAnimator(new ScheduledInterpolator(lengthMillis),
             begin, end, new ViewPropertyAccessor.HeadingAccessor(view));
+    }
+
+    public static AngleAnimator createHeadingAnimator(View view, Angle begin, Angle end, Long lengthMillis)
+    {
+        if (begin == null || end == null)
+        {
+            String message = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+        return new AngleAnimator(new ScheduledInterpolator(lengthMillis),
+                begin, end, new ViewPropertyAccessor.HeadingAccessor(view));
     }
 
     /**

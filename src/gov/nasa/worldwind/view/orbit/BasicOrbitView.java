@@ -910,6 +910,11 @@ public class BasicOrbitView extends BasicView implements OrbitView
         ((OrbitViewInputHandler) this.viewInputHandler).addHeadingAnimator(begin, end);
     }
 
+    public void addHeadingAnimator(Angle begin, Angle end, Long lengthMillis)
+    {
+        ((OrbitViewInputHandler) this.viewInputHandler).addHeadingAnimator(begin, end, lengthMillis);
+    }
+
     public void addPitchAnimator(Angle begin, Angle end)
     {
         ((OrbitViewInputHandler) this.viewInputHandler).addPitchAnimator(begin, end);

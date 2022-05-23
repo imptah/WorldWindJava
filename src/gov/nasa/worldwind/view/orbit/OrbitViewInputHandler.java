@@ -1113,6 +1113,14 @@ public class OrbitViewInputHandler extends BasicViewInputHandler
         this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
     }
 
+    public void addHeadingAnimator(Angle begin, Angle end, Long lengthMillis)
+    {
+        this.gotoAnimControl.remove(VIEW_ANIM_HEADING_PITCH);
+        AngleAnimator headingAnimator = ViewUtil.createHeadingAnimator(this.getView(), begin, end, lengthMillis);
+        this.gotoAnimControl.put(VIEW_ANIM_HEADING, headingAnimator);
+        this.getView().firePropertyChange(AVKey.VIEW, null, this.getView());
+    }
+
     public void addPitchAnimator(Angle begin, Angle end)
     {
         this.gotoAnimControl.remove(VIEW_ANIM_HEADING_PITCH);

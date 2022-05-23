@@ -186,7 +186,7 @@ public class ViewIteration extends ApplicationTemplate
                     heading = computeHeading(path.get(pathPosition - 1), path.get(pathPosition));
 
                 BasicOrbitView view = (BasicOrbitView) wwjPanel.getWwd().getView();
-                view.addHeadingAnimator(view.getHeading(), heading);
+                view.addHeadingAnimator(view.getHeading(), heading, 300L);
             }
         }
 
