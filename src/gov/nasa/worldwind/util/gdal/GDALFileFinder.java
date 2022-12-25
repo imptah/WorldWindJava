@@ -34,11 +34,11 @@ import java.io.File;
  * @author Lado Garakanidze
  * @version $Id: GDALDataFinder.java 1171 2013-02-11 21:45:02Z dcollins $
  */
-class GDALDataFinder extends GDALAbstractFileFilter
+class GDALFileFinder extends GDALAbstractFileFilter
 {
-    public GDALDataFinder()
+    public GDALFileFinder(String fn)
     {
-        super("gdal_datum.csv");
+        super(fn);
     }
 
     public boolean accept(File pathname)
