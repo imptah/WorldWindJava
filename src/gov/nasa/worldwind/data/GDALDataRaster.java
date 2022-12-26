@@ -505,7 +505,11 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
 
         Dataset ds = drvMem.Create("roi-mask", width, height, 1, gdalconst.GDT_UInt32);
         Band band = ds.GetRasterBand(1);
-        band.SetColorInterpretation(gdalconst.GCI_AlphaBand);
+        
+        // For GDAL 3.x, don't mark band as alpha.
+        // See https://lists.osgeo.org/pipermail/gdal-dev/2019-June/050518.html
+        //band.SetColorInterpretation(gdalconst.GCI_AlphaBand);
+        
         double missingSignal = (double) GDALUtils.ALPHA_MASK;
         band.SetNoDataValue(missingSignal);
         band.Fill(missingSignal);
