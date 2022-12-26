@@ -44,6 +44,7 @@ import java.awt.*;
 import java.awt.color.*;
 import java.awt.image.*;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.*;
 import java.util.*;
@@ -84,6 +85,9 @@ public class GDALUtils
     protected static final String GDAL_DATA_PATH = "GDAL_DATA";
 
     protected static final AtomicBoolean gdalIsAvailable = new AtomicBoolean(false);
+    
+    public enum LatLonOrder { latLonCRSauthority, longitudeLatitude };
+    private static LatLonOrder latLonOrder = LatLonOrder.latLonCRSauthority;
 
     static
     {
@@ -199,6 +203,25 @@ public class GDALUtils
             }
         }
     }
+    
+    // For GDAL 3.0, set the transformation axis order.  Coordinate transformations
+    // for vesion 2.x and 3.x have lat/lon reversed
+    // See https://gdal.org/tutorials/osr_api_tut.html#crs-and-axis-order
+    public static void setGDAL3axis(SpatialReference srs)
+    {
+    	// Force all transformations to return longitude, latitude
+        try {
+        	Class<?>[] a = { int.class };
+        	Method setAxis = srs.getClass().getMethod("SetAxisMappingStrategy", a);
+        	Field v = org.gdal.osr.osrConstants.class.getField("OAMS_TRADITIONAL_GIS_ORDER");
+        	setAxis.invoke(srs, v.getInt(v));
+        	latLonOrder = LatLonOrder.longitudeLatitude;
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+    }
+    
+    public static LatLonOrder getLatLonOrder() { return latLonOrder; }
 
     protected static String getCurrentDirectory()
     {
@@ -1164,6 +1187,7 @@ public class GDALUtils
         }
 
         SpatialReference srs = new SpatialReference();
+        GDALUtils.setGDAL3axis(srs);
         srs.ImportFromProj4("+proj=latlong +datum=WGS84 +no_defs");
         return srs;
     }
@@ -1468,6 +1492,7 @@ public class GDALUtils
         {
             params.setValue(AVKey.SPATIAL_REFERENCE_WKT, proj_wkt);
             srs = new SpatialReference(proj_wkt);
+            GDALUtils.setGDAL3axis(srs);
         }
 
         double[] gt = new double[6];
@@ -1504,6 +1529,12 @@ public class GDALUtils
             if (null == srs)
             {
                 srs = createGeographicSRS();
+                // For GDAL 3.0, set the transformation axis order
+                try {
+                	Method setAxis = srs.getClass().getMethod("SetAxisMappingStrategy", Integer.class);
+                	Field v = org.gdal.osr.osrConstants.class.getField("OAMS_TRADITIONAL_GIS_ORDER");
+                	setAxis.invoke(srs, v);
+                } catch (Exception e) {}
             }
             else if (srs.IsGeographic() == 0)
             {

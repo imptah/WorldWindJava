@@ -38,6 +38,7 @@ import gov.nasa.worldwind.util.gdal.GDALUtils;
 import org.gdal.gdal.*;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.osr.SpatialReference;
+import org.gdal.osr.osrConstants;
 
 import java.awt.geom.*;
 import java.io.*;
@@ -269,12 +270,14 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
         if (!WWUtil.isEmpty(proj))
         {
             srs = new SpatialReference(proj);
+            GDALUtils.setGDAL3axis(srs);
         }
 
         if ((null == srs || srs.IsLocal() == 1) && this.hasKey(AVKey.SPATIAL_REFERENCE_WKT))
         {
             proj = this.getStringValue(AVKey.SPATIAL_REFERENCE_WKT);
             srs = new SpatialReference(proj);
+            srs.SetAxisMappingStrategy(osrConstants.OAMS_AUTHORITY_COMPLIANT);
         }
 
         return srs;
