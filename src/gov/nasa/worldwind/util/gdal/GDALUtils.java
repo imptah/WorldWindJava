@@ -116,7 +116,7 @@ public class GDALUtils
             if (Configuration.isWindowsOS())
                 searchDirs = new String[] { getCurrentDirectory(), "C:\\Program Files\\GDAL" };
             else
-                searchDirs = new String[] { getCurrentDirectory(), "/usr/share/gdal", "/usr/lib", "/usr/lib/gdal" };
+                searchDirs = new String[] { getCurrentDirectory(), "/usr/share/gdal", "/usr/lib/gdal", "/usr/lib" };
 
             boolean runningAsJavaWebStart = (System.getProperty("javawebstart.version", null) != null);
 
@@ -179,12 +179,10 @@ public class GDALUtils
             //      https://github.com/OSGeo/gdal/issues/1191
             //      https://github.com/OSGeo/gdal/pull/1658/
             //
-            
     		if (GDALversion >= 30) {
     			String projdbPath = System.getenv("PROJ_LIB");
-    			if (projdbPath != null) {
-    				Logging.logger().info("env PROJ_LIB = " + projdbPath);
-    			} else {
+    			String projdbSrc = "";
+    			if (projdbPath == null) {
     				// For GDAL 3.x, can set location programmatically
     				try {
     					Method setProj = org.gdal.osr.osr.class.getMethod("SetPROJSearchPath", String.class);
@@ -193,14 +191,18 @@ public class GDALUtils
     						projdbPath = findGdalProjDB(dir);
     						if (projdbPath != null) {
     							setProj.invoke(null, projdbPath);
-    							Logging.logger().info("proj.db in " + projdbPath + " (discovered)");
+    							projdbSrc = " (discovered)";
     							break;
     						}
     					}
     				} catch (NoSuchMethodException e) {}
+    			} else {
+    				projdbSrc = " " + Logging.getMessage("gdal.FolderFromEnv", "PROJ_LIB");
     			}
     			if (projdbPath == null)
-    				Logging.logger().severe("*** ERROR - GDAL requires PROJ_LIB env var to locate 'proj.db'");            			
+    				Logging.logger().severe("*** ERROR - GDAL requires PROJ_LIB env var to locate 'proj.db'");
+    			else
+    				Logging.logger().info("proj.db in " + projdbPath + projdbSrc);
         	}
 
         	listAllRegisteredDrivers();
@@ -280,25 +282,25 @@ public class GDALUtils
 
     protected static String findGdalDataFolder(String dir)
     {
-        try {
+        try
+        {
             FileTree fileTree = new FileTree(new File(dir));
             fileTree.setMode(FileTree.FILES_AND_DIRECTORIES);
 
-            String[] datumNames = { "gdal_datum.csv", "gt_datum.csv" };
-            for (String s : datumNames) {
-            	GDALFileFinder filter = new GDALFileFinder(s);
-            	fileTree.asList(filter);
-            	ArrayList<String> folders = filter.getFolders();
+            GDALFileFinder filter = new GDALFileFinder("gt_datum.csv");
+            fileTree.asList(filter);
+            ArrayList<String> folders = filter.getFolders();
 
-            	if (!folders.isEmpty()) {
-            		if (folders.size() > 1) {
-            			String msg = Logging.getMessage("gdal.MultipleDataFoldersFound", folders.get(1));
-            			Logging.logger().warning(msg);
-            		}
-            		return folders.get(0);
-            	}
+            if (!folders.isEmpty()) {
+                if (folders.size() > 1) {
+                    String msg = Logging.getMessage("gdal.MultipleDataFoldersFound", folders.get(1));
+                    Logging.logger().warning(msg);
+                }
+                return folders.get(0);
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t)
+        {
             Logging.logger().severe(t.getMessage());
         }
         return null;
