@@ -281,8 +281,16 @@ public abstract class TiledRasterProducer extends AbstractDataStoreProducer
             // Compute a sector that bounds the data rasters. Make sure the sector does not exceed the limits of
             // latitude and longitude.
             sector = this.computeBoundingSector(this.dataRasterList);
-            if (sector != null)
+            if (sector != null) 
+            {
                 sector = sector.intersection(Sector.FULL_SPHERE);
+                if (sector == null) 
+                {
+                	String msg = Logging.getMessage("generic.CannotCreateRaster", dataRasterList.get(0).toString());
+                	Logging.logger().severe(msg);
+                	return;
+                }
+            }
             params.setValue(AVKey.SECTOR, sector);
         }
 

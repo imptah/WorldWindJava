@@ -44,6 +44,9 @@ import java.awt.*;
 import java.awt.color.*;
 import java.awt.image.*;
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -83,34 +86,47 @@ public class GDALUtils
     protected static final String GDAL_DATA_PATH = "GDAL_DATA";
 
     protected static final AtomicBoolean gdalIsAvailable = new AtomicBoolean(false);
+    
+    public enum LatLonOrder { latLonCRSauthority, longitudeLatitude };
+    private static LatLonOrder latLonOrder = LatLonOrder.latLonCRSauthority;
+    private static int GDALversion = 0;	// integer to avoid floating point compare
+    /**
+     * return major*10 + minor, e.g., 34 is version 3.4
+     */
+    public static int getGDALversion() {
+    	return GDALversion;
+    }
+    private static void initGDALversion()
+    {
+    	int major, minor;
+    	String versionNum = gdal.VersionInfo("VERSION_NUM");
+    	major = Integer.parseInt(versionNum.substring(0,1));
+    	if (versionNum.length() == 4) {
+    		minor = Integer.parseInt(versionNum.substring(1,2));
+    	} else {
+    		minor = Integer.parseInt(versionNum.substring(2,3));
+    	}
+    	GDALversion = major*10 + minor;
+    }
 
     static
     {
-        try
-        {
+        try {
+            String[] searchDirs;
+            if (Configuration.isWindowsOS())
+                searchDirs = new String[] { getCurrentDirectory(), "C:\\Program Files\\GDAL" };
+            else
+                searchDirs = new String[] { getCurrentDirectory(), "/usr/share/gdal", "/usr/lib/gdal", "/usr/lib" };
+
             boolean runningAsJavaWebStart = (System.getProperty("javawebstart.version", null) != null);
 
-            if (!runningAsJavaWebStart)
-            {
-                String[] searchDirs;
-                if (Configuration.isWindowsOS())
-                {
-                    searchDirs = new String[] { getCurrentDirectory(), "C:\\Program Files\\GDAL" };
-                }
-                else
-                {
-                    searchDirs = new String[] { getCurrentDirectory(), "/usr/share/gdal", "/usr/lib", "/usr/lib/gdal" };
-                }
-
+            if (!runningAsJavaWebStart) {
                 // If the environment variables are set, no need to set configuration options.
                 String dataFolder = System.getenv(GDAL_DATA_PATH);
-                if (dataFolder == null)
-                {
-                    for (String dir : searchDirs)
-                    {
+                if (dataFolder == null) {
+                    for (String dir : searchDirs) {
                         dataFolder = findGdalDataFolder(dir);
-                        if (dataFolder != null)
-                        {
+                        if (dataFolder != null) {
                             String msg = Logging.getMessage("gdal.SharedDataFolderFound", dataFolder, Logging.getMessage("gdal.FolderDiscovered"));
                             Logging.logger().info(msg);
                             gdal.SetConfigOption(GDAL_DATA_PATH, dataFolder);
@@ -118,9 +134,7 @@ public class GDALUtils
                         }
                     }
                     if (dataFolder == null)
-                    {
                         Logging.logger().log(Level.WARNING, "gdal.SharedDataFolderNotFound");
-                    }
                 } else {
                     String msg = Logging.getMessage("gdal.SharedDataFolderFound", dataFolder, Logging.getMessage("gdal.FolderFromEnv", GDAL_DATA_PATH));
                     Logging.logger().info(msg);
@@ -129,11 +143,9 @@ public class GDALUtils
                 // Try for GDAL_DRIVER_PATH
                 String drvpath = System.getenv(GDAL_DRIVER_PATH);
                 if (drvpath == null) {
-                    for (String dir : searchDirs)
-                    {
+                    for (String dir : searchDirs) {
                         drvpath = findGdalPlugins(dir);
-                        if (drvpath != null)
-                        {
+                        if (drvpath != null) {
                             String msg = Logging.getMessage("gdal.PluginFolderFound", drvpath, Logging.getMessage("gdal.FolderDiscovered"));
                             Logging.logger().info(msg);
                             gdal.SetConfigOption(GDAL_DRIVER_PATH, drvpath);
@@ -141,9 +153,7 @@ public class GDALUtils
                         }
                     }
                     if (drvpath == null)
-                    {
                         Logging.logger().log(Level.WARNING, "gdal.PluginFolderNotFound");
-                    }
                 } else {
                     String msg = Logging.getMessage("gdal.PluginFolderFound", drvpath, Logging.getMessage("gdal.FolderFromEnv", GDAL_DRIVER_PATH));
                     Logging.logger().info(msg);
@@ -162,26 +172,44 @@ public class GDALUtils
             String msg = Logging.getMessage("generic.LibraryLoadedOK", gdal.VersionInfo("--version"));
             Logging.logger().info(msg);
 
+            initGDALversion();
+
             // For GDAL 3.x, the PROJ6 library is used, which requires the location of the 'proj.db' file.
-            // Future GDAL releases will allow programatic setting of the location of the 'proj.db' file.
-            // For GDAL 3.0.0, the user must set the PROJ_LIB envirnment variable for the location.
-            // For now, just give a warning.
             // References:
             //      https://github.com/OSGeo/gdal/issues/1191
             //      https://github.com/OSGeo/gdal/pull/1658/
             //
-            String versionNum = gdal.VersionInfo("VERSION_NUM");
-            if (Integer.parseInt(versionNum.substring(0,1)) >= 3) {
-                if (System.getenv("PROJ_LIB") == null) {
-                    System.err.println("*** ERROR - GDAL requires PROJ_LIB env var to locate 'proj.db'");
-                }
-            }
-            listAllRegisteredDrivers();
+    		if (GDALversion >= 30) {
+    			String projdbPath = System.getenv("PROJ_LIB");
+    			String projdbSrc = "";
+    			if (projdbPath == null) {
+    				// For GDAL 3.x, can set location programmatically
+    				try {
+    					Method setProj = org.gdal.osr.osr.class.getMethod("SetPROJSearchPath", String.class);
+    					// Search for proj.db
+    					for (String dir : searchDirs) {
+    						projdbPath = findGdalProjDB(dir);
+    						if (projdbPath != null) {
+    							setProj.invoke(null, projdbPath);
+    							projdbSrc = " (discovered)";
+    							break;
+    						}
+    					}
+    				} catch (NoSuchMethodException e) {}
+    			} else {
+    				projdbSrc = " " + Logging.getMessage("gdal.FolderFromEnv", "PROJ_LIB");
+    			}
+    			if (projdbPath == null)
+    				Logging.logger().severe("*** ERROR - GDAL requires PROJ_LIB env var to locate 'proj.db'");
+    			else
+    				Logging.logger().info("proj.db in " + projdbPath + projdbSrc);
+        	}
+
+        	listAllRegisteredDrivers();
 
             gdalIsAvailable.set(true);
-        }
-        catch (Throwable throwable)
-        {
+
+        } catch (Throwable throwable) {
             String reason = Logging.getMessage("generic.LibraryNotFound", "GDAL");
             String msg = Logging.getMessage("generic.LibraryNotLoaded", "GDAL", reason);
             Logging.logger().warning(msg);
@@ -189,23 +217,41 @@ public class GDALUtils
             Logging.logger().log(Level.WARNING, throwableMessage, throwable);
             Logging.logger().info(JAVA_LIBRARY_PATH + "=" + System.getProperty(JAVA_LIBRARY_PATH));
             Logging.logger().info("user.dir" + "=" + getCurrentDirectory());
-            if (Configuration.isWindowsOS())
-            {
+            if (Configuration.isWindowsOS()) {
                 Logging.logger().info("PATH" + "=" + System.getenv("PATH"));
-            }
-            else
-            {
+            } else {
                 Logging.logger().info("LD_LIBRARY_PATH" + "=" + System.getenv("LD_LIBRARY_PATH"));
             }
         }
     }
+    
+    // For GDAL 3.0, set the transformation axis order.  Coordinate transformations
+    // for vesion 2.x and 3.x have lat/lon reversed
+    // See https://gdal.org/tutorials/osr_api_tut.html#crs-and-axis-order
+    public static void setGDAL3axis(SpatialReference srs)
+    {
+    	// Force all transformations to return longitude, latitude
+        try {
+        	Class<?>[] a = { int.class };
+        	Method setAxis = srs.getClass().getMethod("SetAxisMappingStrategy", a);
+        	Field v = org.gdal.osr.osrConstants.class.getField("OAMS_TRADITIONAL_GIS_ORDER");
+        	setAxis.invoke(srs, v.getInt(v));
+        	latLonOrder = LatLonOrder.longitudeLatitude;
+        } catch (NoSuchMethodException e) {
+        } catch (NoSuchFieldException e) {
+        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+		} catch (IllegalArgumentException e) {
+		}
+    }
+    
+    public static LatLonOrder getLatLonOrder() { return latLonOrder; }
 
     protected static String getCurrentDirectory()
     {
         String cwd = System.getProperty("user.dir");
 
-        if (cwd == null || cwd.length() == 0)
-        {
+        if (cwd == null || cwd.length() == 0) {
             String message = Logging.getMessage("generic.UsersHomeDirectoryNotKnown");
             Logging.logger().severe(message);
             throw new WWRuntimeException(message);
@@ -229,13 +275,9 @@ public class GDALUtils
         File[] filenames = (new File(dir)).listFiles(filter);
 
         if (filenames != null && filenames.length > 0)
-        {
             return filenames[0].getAbsolutePath();
-        }
         else
-        {
             return null;
-        }
     }
 
     protected static String findGdalDataFolder(String dir)
@@ -245,7 +287,7 @@ public class GDALUtils
             FileTree fileTree = new FileTree(new File(dir));
             fileTree.setMode(FileTree.FILES_AND_DIRECTORIES);
 
-            GDALDataFinder filter = new GDALDataFinder();
+            GDALFileFinder filter = new GDALFileFinder("gt_datum.csv");
             fileTree.asList(filter);
             ArrayList<String> folders = filter.getFolders();
 
@@ -263,18 +305,39 @@ public class GDALUtils
         }
         return null;
     }
+    
+    protected static String findGdalProjDB(String dir)
+    {
+    	try {
+    		FileTree fileTree = new FileTree(new File(dir));
+    		fileTree.setMode(FileTree.FILES_AND_DIRECTORIES);
+
+    		GDALFileFinder filter = new GDALFileFinder("proj.db");
+    		fileTree.asList(filter);
+    		ArrayList<String> folders = filter.getFolders();
+
+    		if (!folders.isEmpty()) {
+    			if (folders.size() > 1) {
+    				String msg = Logging.getMessage("gdal.MultipleProjDbFoldersFound", folders.get(1));
+    				Logging.logger().warning(msg);
+    			}
+    			return folders.get(0);
+    		}
+    	} catch (Throwable t) {
+    		Logging.logger().severe(t.getMessage());
+    	}
+
+    	return null;
+    }
 
     protected static String buildPathString(String[] folders)
     {
         String del = File.pathSeparator;
         StringBuffer path = new StringBuffer();
 
-        if (null != folders && folders.length > 0)
-        {
+        if (null != folders && folders.length > 0) {
             for (String folder : folders)
-            {
                 path.append(folder).append(del);
-            }
         }
 
         return path.toString();
@@ -1148,6 +1211,7 @@ public class GDALUtils
         }
 
         SpatialReference srs = new SpatialReference();
+        GDALUtils.setGDAL3axis(srs);
         srs.ImportFromProj4("+proj=latlong +datum=WGS84 +no_defs");
         return srs;
     }
@@ -1452,6 +1516,7 @@ public class GDALUtils
         {
             params.setValue(AVKey.SPATIAL_REFERENCE_WKT, proj_wkt);
             srs = new SpatialReference(proj_wkt);
+            GDALUtils.setGDAL3axis(srs);
         }
 
         double[] gt = new double[6];
@@ -1488,6 +1553,12 @@ public class GDALUtils
             if (null == srs)
             {
                 srs = createGeographicSRS();
+                // For GDAL 3.0, set the transformation axis order
+                try {
+                	Method setAxis = srs.getClass().getMethod("SetAxisMappingStrategy", Integer.class);
+                	Field v = org.gdal.osr.osrConstants.class.getField("OAMS_TRADITIONAL_GIS_ORDER");
+                	setAxis.invoke(srs, v);
+                } catch (Exception e) {}
             }
             else if (srs.IsGeographic() == 0)
             {
