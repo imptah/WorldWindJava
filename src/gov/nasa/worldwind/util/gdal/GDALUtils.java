@@ -45,6 +45,7 @@ import java.awt.color.*;
 import java.awt.image.*;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.*;
 import java.util.*;
@@ -88,6 +89,25 @@ public class GDALUtils
     
     public enum LatLonOrder { latLonCRSauthority, longitudeLatitude };
     private static LatLonOrder latLonOrder = LatLonOrder.latLonCRSauthority;
+    private static int GDALversion = 0;	// integer to avoid floating point compare
+    /**
+     * return major*10 + minor, e.g., 34 is version 3.4
+     */
+    public static int getGDALversion() {
+    	return GDALversion;
+    }
+    private static void initGDALversion()
+    {
+    	int major, minor;
+    	String versionNum = gdal.VersionInfo("VERSION_NUM");
+    	major = Integer.parseInt(versionNum.substring(0,1));
+    	if (versionNum.length() == 4) {
+    		minor = Integer.parseInt(versionNum.substring(1,2));
+    	} else {
+    		minor = Integer.parseInt(versionNum.substring(2,3));
+    	}
+    	GDALversion = major*10 + minor;
+    }
 
     static
     {
@@ -152,36 +172,35 @@ public class GDALUtils
             String msg = Logging.getMessage("generic.LibraryLoadedOK", gdal.VersionInfo("--version"));
             Logging.logger().info(msg);
 
+            initGDALversion();
+
             // For GDAL 3.x, the PROJ6 library is used, which requires the location of the 'proj.db' file.
             // References:
             //      https://github.com/OSGeo/gdal/issues/1191
             //      https://github.com/OSGeo/gdal/pull/1658/
             //
-        	String projdbPath = System.getenv("PROJ_LIB");
-        	if (projdbPath != null) {
-        		Logging.logger().info("env PROJ_LIB = " + projdbPath);
-        	} else {
-        		String versionNum = gdal.VersionInfo("VERSION_NUM");
-        		if (Integer.parseInt(versionNum.substring(0,1)) >= 3) {
-        			Method setProj = null;
-        			try {
-        				setProj = org.gdal.osr.osr.class.getMethod("SetPROJSearchPath", String.class);
-        			} catch (NoSuchMethodException e) {}
-
-        			if (setProj != null) {
-        				// Search for proj.db
-        				for (String dir : searchDirs) {
-        					projdbPath = findGdalProjDB(dir);
-        					if (projdbPath != null) {
-        						setProj.invoke(null, projdbPath);
-        						Logging.logger().info("proj.db in " + projdbPath + " (discovered)");
-        						break;
-        					}
-        				}
-        			} 
-        		}
-        		if (projdbPath == null)
-        			Logging.logger().severe("*** ERROR - GDAL requires PROJ_LIB env var to locate 'proj.db'");            			
+            
+    		if (GDALversion >= 30) {
+    			String projdbPath = System.getenv("PROJ_LIB");
+    			if (projdbPath != null) {
+    				Logging.logger().info("env PROJ_LIB = " + projdbPath);
+    			} else {
+    				// For GDAL 3.x, can set location programmatically
+    				try {
+    					Method setProj = org.gdal.osr.osr.class.getMethod("SetPROJSearchPath", String.class);
+    					// Search for proj.db
+    					for (String dir : searchDirs) {
+    						projdbPath = findGdalProjDB(dir);
+    						if (projdbPath != null) {
+    							setProj.invoke(null, projdbPath);
+    							Logging.logger().info("proj.db in " + projdbPath + " (discovered)");
+    							break;
+    						}
+    					}
+    				} catch (NoSuchMethodException e) {}
+    			}
+    			if (projdbPath == null)
+    				Logging.logger().severe("*** ERROR - GDAL requires PROJ_LIB env var to locate 'proj.db'");            			
         	}
 
         	listAllRegisteredDrivers();
@@ -216,9 +235,12 @@ public class GDALUtils
         	Field v = org.gdal.osr.osrConstants.class.getField("OAMS_TRADITIONAL_GIS_ORDER");
         	setAxis.invoke(srs, v.getInt(v));
         	latLonOrder = LatLonOrder.longitudeLatitude;
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
+        } catch (NoSuchMethodException e) {
+        } catch (NoSuchFieldException e) {
+        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+		} catch (IllegalArgumentException e) {
+		}
     }
     
     public static LatLonOrder getLatLonOrder() { return latLonOrder; }

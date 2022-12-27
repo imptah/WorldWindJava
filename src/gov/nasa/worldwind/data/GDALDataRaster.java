@@ -38,8 +38,6 @@ import gov.nasa.worldwind.util.gdal.GDALUtils;
 import org.gdal.gdal.*;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.osr.SpatialReference;
-import org.gdal.osr.osrConstants;
-
 import java.awt.geom.*;
 import java.io.*;
 import java.nio.*;
@@ -277,7 +275,7 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
         {
             proj = this.getStringValue(AVKey.SPATIAL_REFERENCE_WKT);
             srs = new SpatialReference(proj);
-            srs.SetAxisMappingStrategy(osrConstants.OAMS_AUTHORITY_COMPLIANT);
+            GDALUtils.setGDAL3axis(srs);
         }
 
         return srs;
@@ -506,10 +504,14 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
         Dataset ds = drvMem.Create("roi-mask", width, height, 1, gdalconst.GDT_UInt32);
         Band band = ds.GetRasterBand(1);
         
-        // For GDAL 3.x, don't mark band as alpha.
-        // See https://lists.osgeo.org/pipermail/gdal-dev/2019-June/050518.html
-        //band.SetColorInterpretation(gdalconst.GCI_AlphaBand);
-        
+		/*
+		 * Leave the band color interp undefined, otherwise handling of alpha
+		 * won't work as desired for GDAL version 3.1 and up. Doesn't cause a
+		 * problem with versions 1.7.2 and 2.4.0. Check with 'InstallImagery' app.
+		 * See https://lists.osgeo.org/pipermail/gdal-dev/2019-June/050518.html
+		 * 
+		 * band.SetColorInterpretation(gdalconst.GCI_AlphaBand);
+		 */        
         double missingSignal = (double) GDALUtils.ALPHA_MASK;
         band.SetNoDataValue(missingSignal);
         band.Fill(missingSignal);
@@ -530,7 +532,7 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
      * The purpose of this method is to create the best suited dataset for the requested area. The dataset may contain
      * overviews, so instead of retrieving raster from the highest resolution source, we will compose a temporary
      * dataset from an overview, and/or we may clip only the requested area. This will accelerate reprojection (if
-     * needed), because the reporjection will be done on much smaller dataset.
+     * needed), because the reprojection will be done on much smaller dataset.
      *
      * @param reqWidth  width of the requested area
      * @param reqHeight height of the requested area
@@ -1002,7 +1004,20 @@ public class GDALDataRaster extends AbstractDataRaster implements Cacheable
                 band.SetColorInterpretation(colorInt);
             }
 
-            if (colorInt == gdalconst.GCI_AlphaBand)
+            // Special handling for different GDAL versions. The way ReprojectImage works
+            // with respect to alpha layers was broken, probably starting with version 1.8.0
+            // https://lists.osgeo.org/pipermail/gdal-dev/2019-May/050175.html
+            // It was changed again version 3.1
+            //		https://lists.osgeo.org/pipermail/gdal-dev/2019-June/050517.html
+            //      https://github.com/OSGeo/gdal/commit/b427cb23ff1bc2a5ba2f6634fc3bd90816bb7789
+            //
+            // When there's no alpha band in the source, set the destination dataset alpha band
+            // to no transparency, so that when it's used in ReprojectImage, the resulting 
+            // image is opaque.  Otherwise, leave the existing band alone.
+            if ((colorInt == gdalconst.GCI_AlphaBand) 
+            		&& ((GDALUtils.getGDALversion() < 18) 
+            			|| (GDALUtils.getGDALversion() >= 31)
+            			|| (null == srcBand)))
             {
                 band.Fill((double) GDALUtils.ALPHA_MASK);
             }
