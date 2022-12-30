@@ -155,7 +155,7 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
         // Configure this tactical symbol's icon retriever and modifier retriever with either the configuration value or
         // the default value (in that order of precedence).
         String iconRetrieverPath = Configuration.getStringValue(AVKey.MIL_STD_2525_ICON_RETRIEVER_PATH,
-                MilStd2525Constants.DEFAULT_ICON_RETRIEVER_PATH);
+            MilStd2525Constants.DEFAULT_ICON_RETRIEVER_PATH);
         this.setIconRetriever(new MilStd2525IconRetriever(iconRetrieverPath));
         this.setModifierRetriever(new MilStd2525ModifierRetriever(iconRetrieverPath));
 
@@ -379,10 +379,10 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
                 modifiers.setValue(SymbologyConstants.FRAME_SHAPE, SymbologyConstants.FRAME_SHAPE_EXERCISE);
             }
             else if (si != null && (si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_PENDING)
-                    || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_UNKNOWN)
-                    || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_FRIEND)
-                    || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_NEUTRAL)
-                    || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_ASSUMED_FRIEND)))
+                || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_UNKNOWN)
+                || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_FRIEND)
+                || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_NEUTRAL)
+                || si.equalsIgnoreCase(SymbologyConstants.STANDARD_IDENTITY_EXERCISE_ASSUMED_FRIEND)))
             {
                 modifiers.setValue(SymbologyConstants.FRAME_SHAPE, SymbologyConstants.FRAME_SHAPE_EXERCISE);
             }
@@ -399,9 +399,9 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
         // If this symbol represents a hostile entity, and the "hostile/enemy" indicator is enabled, then set the
         // hostile modifier to "ENY".
         boolean isHostile = SymbologyConstants.STANDARD_IDENTITY_HOSTILE.equalsIgnoreCase(si)
-                || SymbologyConstants.STANDARD_IDENTITY_SUSPECT.equalsIgnoreCase(si)
-                || SymbologyConstants.STANDARD_IDENTITY_JOKER.equalsIgnoreCase(si)
-                || SymbologyConstants.STANDARD_IDENTITY_FAKER.equalsIgnoreCase(si);
+            || SymbologyConstants.STANDARD_IDENTITY_SUSPECT.equalsIgnoreCase(si)
+            || SymbologyConstants.STANDARD_IDENTITY_JOKER.equalsIgnoreCase(si)
+            || SymbologyConstants.STANDARD_IDENTITY_FAKER.equalsIgnoreCase(si);
         if (!modifiers.hasKey(SymbologyConstants.HOSTILE_ENEMY) && this.isShowHostileIndicator() && isHostile)
         {
             modifiers.setValue(SymbologyConstants.HOSTILE_ENEMY, SymbologyConstants.HOSTILE_ENEMY);
@@ -491,7 +491,7 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
             if (modifierCode != null)
             {
                 this.addGlyph(dc, Offset.BOTTOM_CENTER, Offset.TOP_CENTER, modifierCode, retrieverParams,
-                        LAYOUT_RELATIVE, osym);
+                    LAYOUT_RELATIVE, osym);
             }
         }
         else
@@ -519,7 +519,7 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
     protected boolean mustUseAlternateOperationalCondition(AVList modifiers)
     {
         return SymbologyConstants.SCHEME_EMERGENCY_MANAGEMENT.equalsIgnoreCase(this.symbolCode.getScheme())
-                || modifiers.hasKey(SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE);
+            || modifiers.hasKey(SymbologyConstants.OPERATIONAL_CONDITION_ALTERNATE);
     }
 
     @Override
@@ -557,7 +557,7 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
             else
             {
                 List<? extends Point2D> points = MilStd2525Util.computeCenterHeadingIndicatorPoints(dc,
-                        osym.placePoint, (Angle) o, length, directionOnly);
+                    osym.placePoint, (Angle) o, length, directionOnly);
                 this.addLine(dc, Offset.CENTER, points, null, 0, osym);
             }
         }
@@ -582,7 +582,7 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
         if (sb.length() > 0)
         {
             this.addLabel(dc, Offset.TOP_CENTER, Offset.BOTTOM_CENTER, sb.toString(), font, null, LAYOUT_RELATIVE,
-                    osym);
+                osym);
             sb.delete(0, sb.length());
         }
 
@@ -713,9 +713,9 @@ public class MilStd2525TacticalSymbol extends AbstractTacticalSymbol
         if (modifiers.hasKey(SymbologyConstants.HIGHER_FORMATION))
             rightLines++;
         if (modifiers.hasKey(SymbologyConstants.COMBAT_EFFECTIVENESS)
-                || modifiers.hasKey(SymbologyConstants.SIGNATURE_EQUIPMENT)
-                || modifiers.hasKey(SymbologyConstants.HOSTILE_ENEMY)
-                || modifiers.hasKey(SymbologyConstants.IFF_SIF))
+            || modifiers.hasKey(SymbologyConstants.SIGNATURE_EQUIPMENT)
+            || modifiers.hasKey(SymbologyConstants.HOSTILE_ENEMY)
+            || modifiers.hasKey(SymbologyConstants.IFF_SIF))
         {
             rightLines++;
         }
