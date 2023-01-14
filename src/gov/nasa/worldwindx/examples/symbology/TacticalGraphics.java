@@ -502,10 +502,32 @@ public class TacticalGraphics extends ApplicationTemplate
             TacticalGraphic graphic;
 
             /////////////////////////////////////////////
+            // Block (2.X.1.1)
+            /////////////////////////////////////////////
+            List<Position> positions = Arrays.asList(
+                Position.fromDegrees(35.0019, -117.6803),
+                Position.fromDegrees(35.0513, -117.6803),
+                Position.fromDegrees(35.0266, -117.5391));
+            graphic = factory.createGraphic("GFTPB---------X", positions, null);
+            graphic.setValue(AVKey.DISPLAY_NAME, "Block: (2.X.1.1)");
+            layer.addRenderable(graphic);
+
+            /////////////////////////////////////////////
+            // Penetrate (2.X.1.17)
+            /////////////////////////////////////////////
+            positions = Arrays.asList(
+                Position.fromDegrees(35.1084, -117.6514),
+                Position.fromDegrees(35.0600, -117.6514),
+                Position.fromDegrees(35.0822, -117.7514));
+            graphic = factory.createGraphic("GFTPP---------X", positions, null);
+            graphic.setValue(AVKey.DISPLAY_NAME, "Penetrate: (2.X.1.17)");
+            layer.addRenderable(graphic);
+
+            /////////////////////////////////////////////
             // Assembly area (2.X.2.1.3.2)
             /////////////////////////////////////////////
 
-            List<Position> positions = Arrays.asList(
+            positions = Arrays.asList(
                 Position.fromDegrees(34.9130, -117.1897),
                 Position.fromDegrees(34.9789, -117.1368),
                 Position.fromDegrees(34.9706, -116.9900),
