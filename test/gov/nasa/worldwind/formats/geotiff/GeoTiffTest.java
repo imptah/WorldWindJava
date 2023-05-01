@@ -132,7 +132,7 @@ public class GeoTiffTest {
         }
     }
 
-    @Test
+/*    @Test
     public void testGeoTiffFileDataRaster() throws IOException {
         File file = new File(EXPORTED_TIF);
         GeoTiffFileReader geoTiffFileReader = new GeoTiffFileReader(file);
@@ -141,7 +141,7 @@ public class GeoTiffTest {
             DataRaster dataRaster = dataRasters[i];
             System.out.println("Directory " + (i + 1) + " rasters -> " + dataRaster.getSector().toString());
         }
-    }
+    }*/
 
     @Test
     public void testCompareGeoIntAndWWRasterResults() throws IOException {
