@@ -8,7 +8,7 @@ plugins {
     id 'com.jfrog.bintray' version '1.8.1'
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
 
@@ -88,12 +88,12 @@ task worldwindJar(type: Jar) {
     }
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+/*task javadocJar(type: Jar, dependsOn: javadoc) {
     group = 'build'
     description = 'Assembles a jar archive containing the javadocs.'
     classifier = 'javadoc'
     from javadoc.destinationDir
-}
+}*/
 
 def pomConfig = {
     licenses {
@@ -120,7 +120,7 @@ publishing {
         bintray(MavenPublication) {
             from components.java
             artifact sourcesJar
-            artifact javadocJar
+//            artifact javadocJar
             groupId project.group
             artifactId project.name
             version project.version
@@ -248,7 +248,7 @@ javadoc {
 artifacts {
     archives sourcesJar
     archives worldwindJar
-    archives javadocJar
+//    archives javadocJar
 }
 
 task processMilStd2525SVGs(dependsOn: jar) {
