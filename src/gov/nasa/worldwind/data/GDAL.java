@@ -32,6 +32,8 @@ import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.util.gdal.GDALUtils;
+import gov.nasa.worldwind.util.gdal.GDALUtils.LatLonOrder;
+
 import org.gdal.gdal.Dataset;
 import org.gdal.osr.*;
 
@@ -111,8 +113,10 @@ public class GDAL
             if (null == srs)
             {
                 String wkt = ds.GetProjectionRef();
-                if (null != wkt && wkt.length() > 0)
+                if (null != wkt && wkt.length() > 0) {
                     srs = new SpatialReference(wkt);
+                    GDALUtils.setGDAL3axis(srs);
+                }
 
                 if (null == srs)
                 {

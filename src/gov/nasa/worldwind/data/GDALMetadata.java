@@ -31,6 +31,8 @@ package gov.nasa.worldwind.data;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.exception.WWRuntimeException;
 import gov.nasa.worldwind.util.*;
+import gov.nasa.worldwind.util.gdal.GDALUtils;
+
 import org.gdal.gdal.Dataset;
 import org.gdal.osr.SpatialReference;
 
@@ -348,6 +350,7 @@ public class GDALMetadata
             try
             {
                 SpatialReference srs = new SpatialReference();
+                GDALUtils.setGDAL3axis(srs);
                 srs.ImportFromProj4(proj4.toString());
                 destParams.setValue(AVKey.SPATIAL_REFERENCE_WKT, srs.ExportToWkt());
             }
