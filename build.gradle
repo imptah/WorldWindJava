@@ -81,9 +81,9 @@ task extensionsJar(type: Jar) {
     }
     doLast {
         copy {
-            from "$buildDir/libs/$extensionsJar.archiveFileName"
+            from "$buildDir/libs/$extensionsJar.archiveName"
             into project.projectDir
-            rename "$extensionsJar.archiveName", "$extensionsJar.archivesBaseName.$extensionsJar.extension"
+            rename "$extensionsJar.archiveName", "$extensionsJar.baseName.$extensionsJar.extension"
         }
     }
 }
