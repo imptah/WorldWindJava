@@ -21,7 +21,7 @@ ant {
 }
 
 ext {
-    joglVersion = '2.4.0-rc-20200202'
+    joglVersion = '2.4.0'
     gdalVersion = '3.5.0'
     jacksonVersion = '1.9.13'
     junitVersion = '4.5'
@@ -31,6 +31,7 @@ ext {
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url "https://jogamp.org/deployment/maven" }
     jcenter()
 }
 
@@ -40,8 +41,9 @@ configurations {
 }
 
 dependencies {
-    implementation group: 'com.metsci.ext.org.jogamp.jogl', name: 'jogl-all-main', version:"$project.joglVersion"
-    implementation group: 'com.metsci.ext.org.jogamp.gluegen', name: 'gluegen-rt-main', version:"$project.joglVersion"
+    implementation 'org.jogamp.gluegen:gluegen-rt-main:2.4.0'
+    implementation 'org.jogamp.joal:joal-main:2.4.0'
+    implementation 'org.jogamp.jogl:jogl-all-main:2.4.0'
     extraLibs 'mil.nga:tiff:2.0.4'
     if (project.hasProperty('systemGDAL')) {
         implementation files("C:\\Program Files\\GDAL\\java\\gdal.jar")
