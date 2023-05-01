@@ -69,21 +69,21 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     }
 }
 
-task worldwindJar(type: Jar) {
+task extensionsJar(type: Jar) {
     group = 'build'
-    description = 'Assembles a jar archive containing the WorldWind classes.'
-    archivesBaseName = 'worldwind'
+    description = 'Assembles a jar archive containing extension classes.'
+    archivesBaseName = 'worldwindx'
     from (sourceSets.main.output) {
         exclude 'com/**'
         exclude 'config/**'
         exclude 'images/**'
-//        exclude 'gov/nasa/worldwind/**'
+        exclude 'gov/nasa/worldwind/**'
     }
     doLast {
         copy {
-            from "$buildDir/libs/$worldwindJar.archiveFileName"
+            from "$buildDir/libs/$extensionsJar.archiveFileName"
             into project.projectDir
-            rename "$worldwindJar.archiveFileName", "$worldwindJar.baseName.$worldwindJar.extension"
+            rename "$extensionsJar.archiveName", "$extensionsJar.archivesBaseName.$extensionsJar.extension"
         }
     }
 }
@@ -122,8 +122,8 @@ publishing {
             name = "GitHubPackages"
             url = "https://maven.pkg.github.com/imptah/WorldWindJava"
             credentials {
-                username = System.getenv("USERNAME")
                 password = System.getenv("TOKEN")
+                username = System.getenv("USERNAME")
             }
         }
     }
@@ -259,7 +259,7 @@ javadoc {
 
 artifacts {
     archives sourcesJar
-    archives worldwindJar
+    archives extensionsJar
 //    archives javadocJar
 }
 
