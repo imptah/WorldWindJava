@@ -77,7 +77,7 @@ task worldwindJar(type: Jar) {
         exclude 'com/**'
         exclude 'config/**'
         exclude 'images/**'
-        exclude 'gov/nasa/worldwind/**'
+//        exclude 'gov/nasa/worldwind/**'
     }
     doLast {
         copy {
