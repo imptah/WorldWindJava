@@ -8,7 +8,7 @@ plugins {
     id 'com.jfrog.bintray' version '1.8.1'
 }
 
-apply plugin: 'java-library'
+apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
 
