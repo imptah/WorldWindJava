@@ -21,7 +21,7 @@ ant {
 }
 
 ext {
-    joglVersion = '2.4.0-rc-20200202'
+    joglVersion = '2.4.0'
     gdalVersion = '3.3.0'
     jacksonVersion = '1.9.13'
     junitVersion = '4.5'
