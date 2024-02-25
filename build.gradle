@@ -48,12 +48,13 @@ dependencies {
     if (project.hasProperty('systemGDAL')) {
         implementation files("C:\\Program Files\\GDAL\\java\\gdal.jar")
     } else {
-        implementation "org.gdal:gdal:$project.gdalVersion"
+        extraLibs "org.gdal:gdal:$project.gdalVersion"
     }
 
     implementation "org.codehaus.jackson:jackson-core-asl:$project.jacksonVersion"
 
     testImplementation "junit:junit:$project.junitVersion"
+    configurations.implementation.extendsFrom(configurations.extraLibs)
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
