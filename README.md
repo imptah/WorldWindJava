@@ -52,11 +52,12 @@ Official WorldWind Java releases have the latest stable features, enhancements a
 
 ## Run a Demo
 
-###### From a Web Browser
+The following options are available to run a WorldWind Java demo:
 
-- [WorldWind Demo App](https://worldwind.arc.nasa.gov/java/latest/webstart/ApplicationTemplate.jnlp) shows WorldWind's basic capabilities
-- [Java Demos](https://worldwind.arc.nasa.gov/java/demos/) has a complete list of example apps
-   
+###### From the Apache NetBeans IDE
+
+Clone the SDK with git, open the WorldWind Java project with Apache Netbeans and run demos via the Netbeans interface. 
+
 ###### From a Windows Development Environment
 
 - Download and extract the [Latest Release](https://github.com/WorldWindEarth/WorldWindJava/releases/latest)
