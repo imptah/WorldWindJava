@@ -128,7 +128,7 @@ def pomConfig = {
 
 publishing {
     publications {
-        bintray(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
@@ -225,7 +225,7 @@ test {
 
 jar {
     group = 'build'
-    archiveBaseName = 'worldwind'
+    archiveBaseName = 'worldwindx'
     from sourceSets.main.output
 
     dependsOn configurations.runtimeClasspath
