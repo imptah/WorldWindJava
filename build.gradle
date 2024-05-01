@@ -10,7 +10,7 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.artifactory'
+//apply plugin: 'com.jfrog.artifactory'
 
 group = 'earth.worldwind'
 version = '2.3.0' + (project.hasProperty('snapshot') ? '-SNAPSHOT' : '')
@@ -165,23 +165,23 @@ bintray {
     }
 }
 
-artifactory {
-    contextUrl = 'https://oss.jfrog.org/artifactory'
-    publish {
-        repository {
-            repoKey = 'oss-snapshot-local'
-            username = System.getenv('BINTRAY_USER')
-            password = System.getenv('BINTRAY_API_KEY')
-        }
-        defaults {
-            publications('bintray')
-            publishArtifacts = true
-        }
-    }
-    if (project.hasProperty('build.number')) {
-        clientConfig.info.setBuildNumber(project.getProperty('build.number'))
-    }
-}
+//artifactory {
+//    contextUrl = 'https://oss.jfrog.org/artifactory'
+//    publish {
+//        repository {
+//            repoKey = 'oss-snapshot-local'
+//            username = System.getenv('BINTRAY_USER')
+//            password = System.getenv('BINTRAY_API_KEY')
+//        }
+//        defaults {
+//            publications('bintray')
+//            publishArtifacts = true
+//        }
+//    }
+//    if (project.hasProperty('build.number')) {
+//        clientConfig.info.setBuildNumber(project.getProperty('build.number'))
+//    }
+//}
 
 sourceSets {
     main {
