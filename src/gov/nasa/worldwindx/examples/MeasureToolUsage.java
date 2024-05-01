@@ -49,6 +49,7 @@ import java.util.ArrayList;
  */
 public class MeasureToolUsage extends ApplicationTemplate {
 
+
     public static class AppFrame extends ApplicationTemplate.AppFrame {
 
         private int lastTabIndex = -1;
