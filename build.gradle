@@ -31,6 +31,7 @@ repositories {
     mavenLocal()
     mavenCentral()
     jcenter()
+    maven { url = "https://jogamp.org/deployment/maven" }
 }
 
 configurations {
@@ -39,8 +40,8 @@ configurations {
 }
 
 dependencies {
-    compile "com.metsci.ext.org.jogamp.jogl:jogl-all-main:$project.joglVersion"
-    compile "com.metsci.ext.org.jogamp.gluegen:gluegen-rt-main:$project.joglVersion"
+    compile "org.jogamp.jogl:jogl-all-main:2.4.0"
+    compile "org.jogamp.gluegen:gluegen-rt-main:2.4.0"
     extraLibs 'mil.nga:tiff:2.0.4'
 
     if (project.hasProperty('systemGDAL')) {
