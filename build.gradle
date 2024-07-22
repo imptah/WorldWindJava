@@ -83,6 +83,67 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
+def pomConfig = {
+    licenses {
+        license {
+            name 'NASA Open Source Agreement v1.3'
+            url 'https://ti.arc.nasa.gov/opensource/nosa/'
+            distribution 'repo'
+        }
+    }
+    developers {
+        developer {
+            id 'emxsys'
+            name 'Bruce Schubert'
+            email 'bruce@emxsys.com'
+        }
+    }
+    scm {
+        url 'https://github.com/WorldWindEarth/WorldWindJava'
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId project.group
+            artifactId project.name
+            version project.version
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('description',
+                        'A community supported fork of the NASA WorldWind Java SDK (WWJ)' +
+                                'is for building cross-platform 3D geospatial desktop applications in Java.'
+                )
+                root.appendNode('name', project.name)
+                root.appendNode('url', 'https://github.com/WorldWindEarth/WorldWindJava')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+//artifactory {
+//    contextUrl = 'https://oss.jfrog.org/artifactory'
+//    publish {
+//        repository {
+//            repoKey = 'oss-snapshot-local'
+//            username = System.getenv('BINTRAY_USER')
+//            password = System.getenv('BINTRAY_API_KEY')
+//        }
+//        defaults {
+//            publications('bintray')
+//            publishArtifacts = true
+//        }
+//    }
+//    if (project.hasProperty('build.number')) {
+//        clientConfig.info.setBuildNumber(project.getProperty('build.number'))
+//    }
+//}
+
 sourceSets {
     main {
         java {
