@@ -29,20 +29,20 @@ configurations {
 }
 
 dependencies {
-	implementation group: 'org.jogamp.jogl', name: 'jogl-all-main', version:"$project.joglVersion"
-    implementation group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version:"$project.joglVersion"
+    compile group: 'org.jogamp.jogl', name: 'jogl-all-main', version:"$project.joglVersion"
+    compile group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version:"$project.joglVersion"
     extraLibs 'mil.nga:tiff:2.0.4'
 
     if (project.hasProperty('systemGDAL')) {
-        implementation files("C:\\Program Files\\GDAL\\java\\gdal.jar")
+        compile files("C:\\Program Files\\GDAL\\java\\gdal.jar")
     } else {
-        implementation "org.gdal:gdal:$project.gdalVersion"
+        compile "org.gdal:gdal:$project.gdalVersion"
     }
 
-    implementation "org.codehaus.jackson:jackson-core-asl:$project.jacksonVersion"
+    compile "org.codehaus.jackson:jackson-core-asl:$project.jacksonVersion"
 
     testImplementation "junit:junit:$project.junitVersion"
-    configurations.implementation.extendsFrom(configurations.extraLibs)
+    configurations.compile.extendsFrom(configurations.extraLibs)
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
