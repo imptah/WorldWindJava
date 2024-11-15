@@ -1054,8 +1054,6 @@ public interface DrawContext extends WWObject, Disposable
     
     /**
      * Convert GL surface coordinate point to AWT device point using DPI scaling.
-     * @param glPoint
-     * @return
      */
     public Point glPointToAwtPoint(Point glPoint);
 }

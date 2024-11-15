@@ -283,3 +283,7 @@ task runLayerManager(type: JavaExec, dependsOn: classes) {
     main = 'gov.nasa.worldwindx.examples.layermanager.LayerManagerApp'
     systemProperty 'java.util.logging.config.file', "$project.projectDir/logging.properties"
 }
+
+tasks.withType(Javadoc) {
+    enabled = false
+}
