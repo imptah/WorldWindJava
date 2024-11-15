@@ -1,5 +1,4 @@
-.DS_Store
-
+.gradle
 .idea
 
 build
@@ -11,6 +10,5 @@ worldwindx.jar
 /dist/
 /nbproject/private/
 
-.gradle
 .nb-gradle
 /bin/

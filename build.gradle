@@ -1,8 +1,8 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 
 group = 'earth.worldwind'
-version = '2.3.0' + (project.hasProperty('snapshot') ? '-SNAPSHOT' : '')
+version = '2.4.0' + (project.hasProperty('snapshot') ? '-SNAPSHOT' : '')
 
 ant {
     property(file: 'release-build.properties')
@@ -10,17 +10,17 @@ ant {
 }
 
 ext {
-    joglVersion = '2.4.0-rc-20200202'
-    gdalVersion = '3.3.0'
+    joglVersion = '2.5.0'
+    gdalVersion = '3.10.0'
     jacksonVersion = '1.9.13'
     junitVersion = '4.5'
+    //systemGDAL = true
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
-    jcenter()
-    maven { url = "https://jogamp.org/deployment/maven" }
+    maven { url = "https://jogamp.org/deployment/maven/" }
 }
 
 configurations {
@@ -29,17 +29,17 @@ configurations {
 }
 
 dependencies {
-    compile "org.jogamp.jogl:jogl-all-main:2.4.0"
-    compile "org.jogamp.gluegen:gluegen-rt-main:2.4.0"
+	implementation group: 'org.jogamp.jogl', name: 'jogl-all-main', version:"$project.joglVersion"
+    implementation group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version:"$project.joglVersion"
     extraLibs 'mil.nga:tiff:2.0.4'
 
     if (project.hasProperty('systemGDAL')) {
-        compile files("${ant.properties['gdal.jar.dir']}/gdal.jar")
+        implementation files("C:\\Program Files\\GDAL\\java\\gdal.jar")
     } else {
         implementation "org.gdal:gdal:$project.gdalVersion"
     }
 
-    compile "org.codehaus.jackson:jackson-core-asl:$project.jacksonVersion"
+    implementation "org.codehaus.jackson:jackson-core-asl:$project.jacksonVersion"
 
     testImplementation "junit:junit:$project.junitVersion"
     configurations.compile.extendsFrom(configurations.extraLibs)
@@ -57,11 +57,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     }
 }
 
-task extensionsJar(type: Jar) {
+task worldwindJar(type: Jar) {
     group = 'build'
-    description = 'Assembles a jar archive containing the extension classes.'
-    baseName = 'worldwindx'
-    from(sourceSets.main.output) {
+    description = 'Assembles a jar archive containing the WorldWind classes.'
+    archivesBaseName = 'worldwind'
+    from (sourceSets.main.output) {
         exclude 'com/**'
         exclude 'config/**'
         exclude 'images/**'
@@ -69,9 +69,9 @@ task extensionsJar(type: Jar) {
     }
     doLast {
         copy {
-            from "$buildDir/libs/$extensionsJar.archiveName"
+            from "$buildDir/libs/$worldwindJar.archiveFileName"
             into project.projectDir
-            rename "$extensionsJar.archiveName", "$extensionsJar.baseName.$extensionsJar.extension"
+            rename "$worldwindJar.archiveFileName", "$worldwindJar.baseName.$worldwindJar.extension"
         }
     }
 }
@@ -115,8 +115,8 @@ publishing {
             pom.withXml {
                 def root = asNode()
                 root.appendNode('description',
-                        'A community supported fork of the NASA WorldWind Java SDK (WWJ)' +
-                                'is for building cross-platform 3D geospatial desktop applications in Java.'
+                    'A community supported fork of the NASA WorldWind Java SDK (WWJ)' +
+                    'is for building cross-platform 3D geospatial desktop applications in Java.'
                 )
                 root.appendNode('name', project.name)
                 root.appendNode('url', 'https://github.com/WorldWindEarth/WorldWindJava')
@@ -125,24 +125,6 @@ publishing {
         }
     }
 }
-
-//artifactory {
-//    contextUrl = 'https://oss.jfrog.org/artifactory'
-//    publish {
-//        repository {
-//            repoKey = 'oss-snapshot-local'
-//            username = System.getenv('BINTRAY_USER')
-//            password = System.getenv('BINTRAY_API_KEY')
-//        }
-//        defaults {
-//            publications('bintray')
-//            publishArtifacts = true
-//        }
-//    }
-//    if (project.hasProperty('build.number')) {
-//        clientConfig.info.setBuildNumber(project.getProperty('build.number'))
-//    }
-//}
 
 sourceSets {
     main {
@@ -168,7 +150,7 @@ compileJava {
 
 test {
     dependsOn jar
-    classpath += project.files("$buildDir/libs/$jar.archiveName", configurations.runtime)
+    classpath += project.files("$buildDir/libs/$jar.archiveFileName")
 }
 
 jar {
@@ -181,9 +163,9 @@ jar {
 
     doLast {
         copy {
-            from "$buildDir/libs/$jar.archiveName"
+            from "$buildDir/libs/$jar.archiveFileName"
             into project.projectDir
-            rename "$jar.archiveName", "$jar.baseName.$jar.extension"
+            rename "$jar.archiveFileName", "$jar.baseName.$jar.extension"
         }
     }
 
@@ -207,7 +189,7 @@ javadoc {
 
 artifacts {
     archives sourcesJar
-    archives extensionsJar
+    archives worldwindJar
     archives javadocJar
 }
 
@@ -273,11 +255,11 @@ task processMilStd2525SVGs(dependsOn: jar) {
         def modifiersDir = file("$milStd2525PngDir.path/modifiers")
         modifiersDir.traverse([type: groovy.io.FileType.FILES]) { srcFile ->
             exec {
-                commandLine 'java', \
-                     '-cp', \
-                     "$buildDir/libs/$jar.archiveName", \
-                     'gov.nasa.worldwind.util.ImageTrimmer', \
-                     srcFile
+                commandLine 'java',\
+                    '-cp',\
+                    "$buildDir/libs/$jar.archiveFileName",\
+                    'gov.nasa.worldwind.util.ImageTrimmer',\
+                    srcFile
             }
         }
     }
@@ -298,6 +280,6 @@ task runLayerManager(type: JavaExec, dependsOn: classes) {
     group = 'run'
     description = 'Runs the LayerManager example app.'
     classpath sourceSets.main.runtimeClasspath
-    main = 'gov.nasa.worldwindx.examples.ViewLimits'
+    main = 'gov.nasa.worldwindx.examples.layermanager.LayerManagerApp'
     systemProperty 'java.util.logging.config.file', "$project.projectDir/logging.properties"
 }
