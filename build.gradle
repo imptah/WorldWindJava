@@ -42,7 +42,7 @@ dependencies {
     implementation "org.codehaus.jackson:jackson-core-asl:$project.jacksonVersion"
 
     testImplementation "junit:junit:$project.junitVersion"
-    configurations.compile.extendsFrom(configurations.extraLibs)
+    configurations.implementation.extendsFrom(configurations.extraLibs)
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
